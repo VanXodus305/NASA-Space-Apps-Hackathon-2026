@@ -1,8 +1,50 @@
-@import "tailwindcss";
-@import "@heroui/styles";
+@import 'tailwindcss';
+@import '@heroui/styles';
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    var(--font-plex-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-display:
+    var(--font-sora), var(--font-instrument), ui-sans-serif, system-ui,
+    sans-serif;
+}
+
+/* Design tokens: one surface scale, three text tiers, one accent. */
+@theme {
+  --color-void: #08080e;
+  --color-panel: #0e0d16;
+  --color-panel-2: #151320;
+  --color-ink: #ece6f1;
+  --color-ink-dim: #b4abc1;
+  --color-ink-faint: #968da4;
+  --color-lilac: #cfb0e0;
+  --color-lilac-strong: #e3cbf0;
+}
+
+/* Strands (React Bits) */
+.strands-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.strands-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+a:focus-visible {
+  outline: 2px solid #cfb0e0;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* SVG captions and labels share the site's monospace instead of the browser default. */
+svg text {
+  font-family:
+    var(--font-plex-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
 }

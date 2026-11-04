@@ -1,14 +1,14 @@
-"use client";
-import Link from "next/link";
-import { useState } from "react";
-import { Button, Card } from "@heroui/react";
-import { ArrowUpRight, MoveUpRight, Sparkles, Telescope } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
-import { targets, targetHref } from "@/lib/spherex";
-import { InteractiveCard } from "./motion-effects";
+'use client'
+import Link from 'next/link'
+import { useState } from 'react'
+import { Button } from '@heroui/react'
+import { ArrowUpRight, MoveUpRight, Sparkles, Telescope } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { targets, targetHref } from '@/lib/spherex'
+import ReflectiveCard from './react-bits/reflective-card'
 
 function TargetArt({ index, color }: { index: number; color: string }) {
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotion()
   return (
     <svg aria-hidden="true" viewBox="0 0 500 240" className="h-full w-full">
       <defs>
@@ -64,7 +64,7 @@ function TargetArt({ index, color }: { index: number; color: string }) {
         transition={{
           duration: 8 + index,
           repeat: Infinity,
-          ease: "easeInOut",
+          ease: 'easeInOut',
         }}
       >
         <circle
@@ -96,35 +96,35 @@ function TargetArt({ index, color }: { index: number; color: string }) {
         ARTIST’S VISUALIZATION
       </text>
     </svg>
-  );
+  )
 }
 export function TargetGallery() {
-  const reduced = useReducedMotion();
-  const [filter, setFilter] = useState("All targets");
+  const reduced = useReducedMotion()
+  const [filter, setFilter] = useState('All targets')
   return (
     <>
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-2">
-          {["All targets", "Motion", "Brightness"].map((f) => (
+          {['All targets', 'Motion', 'Brightness'].map((f) => (
             <Button
               key={f}
               variant="ghost"
               onPress={() => setFilter(f)}
               aria-pressed={filter === f}
-              className={`h-10 rounded-full border px-5 text-xs ${filter === f ? "border-[#bfa0d9]/40 bg-[#bfa0d9]/15 text-[#e5c9f6]" : "border-white/10 text-[#9e8eae]"}`}
+              className={`h-10 rounded-full border px-5 text-xs ${filter === f ? 'border-lilac/40 bg-lilac/15 text-ink' : 'border-white/10 text-ink-faint'}`}
             >
               {f}
             </Button>
           ))}
         </div>
-        <span className="font-mono text-[10px] tracking-widest text-[#84768f]">
-          {filter === "All targets" ? "05" : filter === "Motion" ? "03" : "02"}{" "}
+        <span className="font-mono text-[11px] tracking-[.1em] text-ink-faint">
+          {filter === 'All targets' ? '05' : filter === 'Motion' ? '03' : '02'}{' '}
           FIELDS TO EXPLORE
         </span>
       </div>
       <motion.div layout className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {targets
-          .filter((t) => filter === "All targets" || t.type === filter)
+          .filter((t) => filter === 'All targets' || t.type === filter)
           .map((t) => (
             <motion.div
               layout
@@ -132,68 +132,84 @@ export function TargetGallery() {
               initial={reduced ? false : { opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
+              className="flex justify-center"
             >
-              <InteractiveCard>
-                <Card className="group h-full gap-0 overflow-hidden rounded-2xl border border-white/10 bg-[#101019] p-0 transition-colors hover:border-[#bea1d4]/40">
-                  <div className="relative h-52 overflow-hidden border-b border-white/8 bg-[#0a0911]">
-                    <TargetArt index={Number(t.number) - 1} color={t.color} />
-                    <span className="absolute left-5 top-4 font-mono text-[10px] text-[#a08bb2]">
-                      FIELD / {t.number}
-                    </span>
-                    <span className="absolute right-5 top-4 flex items-center gap-1.5 rounded-full border border-white/10 bg-[#11101b] px-2 py-1 text-[9px] text-[#baacc8]">
-                      {t.type === "Motion" ? (
-                        <MoveUpRight size={10} />
-                      ) : (
-                        <Sparkles size={10} />
-                      )}{" "}
-                      {t.type}
-                    </span>
-                  </div>
-                  <Card.Content className="flex flex-1 flex-col p-6">
-                    <p className="font-mono text-[9px] tracking-widest text-[#ab8fbf]">
-                      {t.tag}
-                    </p>
-                    <h2 className="mt-3 font-display text-2xl tracking-tight">
-                      {t.name}
-                    </h2>
-                    <p className="mt-3 min-h-20 text-xs leading-6 text-[#a192af]">
-                      {t.description}
-                    </p>
-                    {t.name === "WISE 0855" && (
-                      <p className="mt-2 text-[10px] text-[#bba1cf]">
-                        Auto release enabled · falls back to QR2
+              <Link
+                href={targetHref(t)}
+                aria-label={`Open ${t.name} in viewer`}
+                className="block w-fit max-w-full rounded-3xl"
+              >
+                <ReflectiveCard
+                  name={t.name}
+                  role={t.tag}
+                  videoSrc="/videos/reflection.mp4"
+                  webcam={false}
+                  tint="#cfb0e0"
+                  metalness={1}
+                  roughness={0.3}
+                  blurStrength={6}
+                  shine={1}
+                  glare={0.5}
+                  grayscale={1}
+                  warp={0.6}
+                  warpScale={1}
+                  bevel={3}
+                  tiltStrength={12}
+                  radius={24}
+                  enableTilt
+                  intro
+                >
+                  {/* Solid card face, inset 4px so the metal shows as a frame. */}
+                  <div className="relative m-[calc(4px-var(--rc-pad))] flex flex-1 flex-col overflow-hidden rounded-[20px] bg-panel">
+                    <div className="relative aspect-[500/240] shrink-0 overflow-hidden border-b border-white/8 bg-void">
+                      <TargetArt index={Number(t.number) - 1} color={t.color} />
+                      <span className="absolute left-4 top-3 font-mono text-[11px] text-ink-dim">
+                        FIELD / {t.number}
+                      </span>
+                      <span className="absolute right-4 top-3 flex items-center gap-1.5 rounded-full border border-white/10 bg-panel-2 px-2 py-1 text-[11px] text-ink-dim">
+                        {t.type === 'Motion' ? (
+                          <MoveUpRight size={10} />
+                        ) : (
+                          <Sparkles size={10} />
+                        )}{' '}
+                        {t.type}
+                      </span>
+                    </div>
+                    <div className="flex min-h-0 flex-1 flex-col px-5 pb-5 pt-5">
+                      <p className="font-mono text-[11px] tracking-[.1em] text-ink-dim">
+                        {t.tag}
                       </p>
-                    )}
-                    <Link
-                      href={targetHref(t)}
-                      className="mt-6 flex items-center justify-between border-t border-white/10 pt-5 text-xs text-[#d2b8e4]"
-                    >
-                      Open in viewer{" "}
-                      <ArrowUpRight
-                        size={17}
-                        className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                      />
-                    </Link>
-                  </Card.Content>
-                </Card>
-              </InteractiveCard>
+                      <h2 className="mt-2 font-display text-2xl tracking-tight text-ink">
+                        {t.name}
+                      </h2>
+                      <p className="mt-3 text-[13px] leading-6 text-ink-faint">
+                        {t.description}
+                      </p>
+                      {t.name === 'WISE 0855' && (
+                        <p className="mt-2 text-[11px] text-lilac">
+                          Auto release enabled · falls back to QR2
+                        </p>
+                      )}
+                      <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-4 text-xs text-ink">
+                        Open in viewer <ArrowUpRight size={17} />
+                      </div>
+                    </div>
+                  </div>
+                </ReflectiveCard>
+              </Link>
             </motion.div>
           ))}
-        {filter === "All targets" && (
-          <div className="flex min-h-80 flex-col items-center justify-center rounded-2xl border border-dashed border-[#b598cb]/25 bg-[#14101b]/50 p-8 text-center">
-            <Telescope
-              size={33}
-              strokeWidth={1}
-              className="mb-6 text-[#b69bc9]"
-            />
+        {filter === 'All targets' && (
+          <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border border-dashed border-lilac/25 bg-panel-2/50 p-8 text-center">
+            <Telescope size={33} strokeWidth={1} className="mb-6 text-lilac" />
             <h2 className="font-display text-2xl">Your own coordinates.</h2>
-            <p className="mt-3 max-w-60 text-xs leading-6 text-[#9b8aa9]">
+            <p className="mt-3 max-w-60 text-[13px] leading-6 text-ink-faint">
               The sky doesn’t end with this list. Point the viewer somewhere
               new.
             </p>
             <Link
               href="/#observatory"
-              className="mt-6 inline-flex items-center gap-3 text-xs text-[#d3b9e3]"
+              className="mt-6 inline-flex items-center gap-3 text-xs text-ink"
             >
               Go off the map <ArrowUpRight size={15} />
             </Link>
@@ -201,5 +217,5 @@ export function TargetGallery() {
         )}
       </motion.div>
     </>
-  );
+  )
 }

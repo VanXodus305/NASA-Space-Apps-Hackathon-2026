@@ -1,11 +1,11 @@
-"use client";
+'use client'
 /* Scientific PNGs must retain original pixels; do not pass through image optimization. */
 /* eslint-disable @next/next/no-img-element */
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { Button, Input, Form, Slider } from "@heroui/react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { Button, Input, Form, Slider } from '@heroui/react'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   ArrowRight,
   ArrowUpRight,
@@ -24,7 +24,7 @@ import {
   Telescope,
   TriangleAlert,
   X,
-} from "lucide-react";
+} from 'lucide-react'
 import {
   defaults,
   detectors,
@@ -35,222 +35,221 @@ import {
   targetHref,
   type Search,
   type FramesResponse,
-} from "@/lib/spherex";
-import { StarMark } from "./cosmos";
-import AnimatedContent from "./react-bits/animated-content";
-import { FieldOfView, SkySelect, SkyTextField } from "./sky-controls";
+} from '@/lib/spherex'
+import { StarMark } from './cosmos'
+import AnimatedContent from './react-bits/animated-content'
+import { FieldOfView, SkySelect, SkyTextField } from './sky-controls'
 
 export function Observatory() {
-  const urlParams = useSearchParams();
-  const [form, setForm] = useState<Search>(defaults);
-  const [result, setResult] = useState<FramesResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [requestedRelease, setRequestedRelease] = useState("auto");
-  const [index, setIndex] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1);
-  const [failed, setFailed] = useState<string[]>([]);
-  const [loaded, setLoaded] = useState<string[]>([]);
-  const [shareState, setShareState] = useState("");
-  const [shareUrl, setShareUrl] = useState("");
-  const [fullscreen, setFullscreen] = useState(false);
-  const [fullscreenHost, setFullscreenHost] = useState<Element | null>(null);
-  const controller = useRef<AbortController | null>(null);
-  const player = useRef<HTMLDivElement>(null);
-  const lastQuery = useRef<string | null>(null);
-  const frames = result?.frames ?? [];
-  const frame = frames[index];
-  const canPlay = frames.length > 1 && !loading;
+  const urlParams = useSearchParams()
+  const [form, setForm] = useState<Search>(defaults)
+  const [result, setResult] = useState<FramesResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [requestedRelease, setRequestedRelease] = useState('auto')
+  const [index, setIndex] = useState(0)
+  const [playing, setPlaying] = useState(false)
+  const [speed, setSpeed] = useState(1)
+  const [failed, setFailed] = useState<string[]>([])
+  const [loaded, setLoaded] = useState<string[]>([])
+  const [shareState, setShareState] = useState('')
+  const [shareUrl, setShareUrl] = useState('')
+  const [fullscreen, setFullscreen] = useState(false)
+  const [fullscreenHost, setFullscreenHost] = useState<Element | null>(null)
+  const controller = useRef<AbortController | null>(null)
+  const player = useRef<HTMLDivElement>(null)
+  const lastQuery = useRef<string | null>(null)
+  const frames = result?.frames ?? []
+  const frame = frames[index]
+  const canPlay = frames.length > 1 && !loading
   const runSearch = useCallback(async (search: Search, updateUrl = true) => {
-    controller.current?.abort();
-    let params: URLSearchParams;
+    controller.current?.abort()
+    let params: URLSearchParams
     try {
-      params = queryParams(search);
+      params = queryParams(search)
     } catch (e) {
-      setError((e as Error).message);
-      setLoading(false);
-      setPlaying(false);
-      return;
+      setError((e as Error).message)
+      setLoading(false)
+      setPlaying(false)
+      return
     }
-    const abort = new AbortController();
-    controller.current = abort;
-    setLoading(true);
-    setError("");
-    setResult(null);
-    setIndex(0);
-    setPlaying(false);
-    setFailed([]);
-    setLoaded([]);
-    setShareState("");
-    setShareUrl("");
-    setRequestedRelease(search.release);
+    const abort = new AbortController()
+    controller.current = abort
+    setLoading(true)
+    setError('')
+    setResult(null)
+    setIndex(0)
+    setPlaying(false)
+    setFailed([])
+    setLoaded([])
+    setShareState('')
+    setShareUrl('')
+    setRequestedRelease(search.release)
     if (updateUrl) {
-      const share = new URLSearchParams({ ...search });
-      lastQuery.current = share.toString();
-      window.history.replaceState(null, "", `/?${share}#observatory`);
+      const share = new URLSearchParams({ ...search })
+      lastQuery.current = share.toString()
+      window.history.replaceState(null, '', `/?${share}#observatory`)
     }
     try {
       const response = await fetch(`/api/frames?${params}`, {
         signal: abort.signal,
-      });
-      const data = await response.json();
+      })
+      const data = await response.json()
       if (!response.ok)
         throw new Error(
-          `${response.status === 400 ? "Check your search" : "Archive connection problem"}: ${data.detail || "Please try again."}`,
-        );
-      const parsed = parseFrames(data);
-      if (!abort.signal.aborted) setResult(parsed);
+          `${response.status === 400 ? 'Check your search' : 'Archive connection problem'}: ${data.detail || 'Please try again.'}`,
+        )
+      const parsed = parseFrames(data)
+      if (!abort.signal.aborted) setResult(parsed)
     } catch (e) {
       if (!abort.signal.aborted)
         setError(
           e instanceof Error
             ? e.message
-            : "Unable to reach the archive. Please try again.",
-        );
+            : 'Unable to reach the archive. Please try again.',
+        )
     } finally {
-      if (!abort.signal.aborted) setLoading(false);
+      if (!abort.signal.aborted) setLoading(false)
     }
-  }, []);
-  const query = urlParams.toString();
+  }, [])
+  const query = urlParams.toString()
   // Defer URL hydration so Strict Mode can cancel its first setup safely.
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false
     queueMicrotask(() => {
-      if (cancelled || lastQuery.current === query) return;
-      lastQuery.current = query;
-      const params = new URLSearchParams(query);
-      const search = readSearch(params);
-      setForm(search);
-      if (params.has("ra") || params.has("dec") || params.get("name"))
-        void runSearch(search, false);
+      if (cancelled || lastQuery.current === query) return
+      lastQuery.current = query
+      const params = new URLSearchParams(query)
+      const search = readSearch(params)
+      setForm(search)
+      if (params.has('ra') || params.has('dec') || params.get('name'))
+        void runSearch(search, false)
       else {
-        controller.current?.abort();
-        setResult(null);
-        setError("");
-        setLoading(false);
-        setPlaying(false);
+        controller.current?.abort()
+        setResult(null)
+        setError('')
+        setLoading(false)
+        setPlaying(false)
       }
-    });
+    })
     return () => {
-      cancelled = true;
-    };
-  }, [query, runSearch]);
-  useEffect(() => () => controller.current?.abort(), []);
+      cancelled = true
+    }
+  }, [query, runSearch])
+  useEffect(() => () => controller.current?.abort(), [])
   useEffect(() => {
-    if (!playing || !canPlay) return;
+    if (!playing || !canPlay) return
     const timer = setInterval(
       () => setIndex((i) => (i + 1) % frames.length),
       1000 / speed,
-    );
-    return () => clearInterval(timer);
-  }, [playing, speed, frames.length, canPlay]);
+    )
+    return () => clearInterval(timer)
+  }, [playing, speed, frames.length, canPlay])
   useEffect(() => {
     const change = () => {
-      setFullscreen(Boolean(document.fullscreenElement));
-      setFullscreenHost(document.fullscreenElement);
-    };
-    document.addEventListener("fullscreenchange", change);
+      setFullscreen(Boolean(document.fullscreenElement))
+      setFullscreenHost(document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', change)
     const visibility = () => {
-      if (document.hidden) setPlaying(false);
-    };
-    document.addEventListener("visibilitychange", visibility);
+      if (document.hidden) setPlaying(false)
+    }
+    document.addEventListener('visibilitychange', visibility)
     return () => {
-      document.removeEventListener("fullscreenchange", change);
-      document.removeEventListener("visibilitychange", visibility);
-    };
-  }, []);
+      document.removeEventListener('fullscreenchange', change)
+      document.removeEventListener('visibilitychange', visibility)
+    }
+  }, [])
   const set = (key: keyof Search, value: string) =>
-    setForm((current) => ({ ...current, [key]: value }));
+    setForm((current) => ({ ...current, [key]: value }))
   const step = (delta: number) => {
     if (frames.length) {
-      setPlaying(false);
-      setIndex((i) => (i + delta + frames.length) % frames.length);
+      setPlaying(false)
+      setIndex((i) => (i + delta + frames.length) % frames.length)
     }
-  };
+  }
   async function share() {
     try {
-      queryParams(form);
-      const url = new URL("/", window.location.origin);
-      url.search = new URLSearchParams(form).toString();
-      url.hash = "observatory";
-      setShareUrl(url.toString());
+      queryParams(form)
+      const url = new URL('/', window.location.origin)
+      url.search = new URLSearchParams(form).toString()
+      url.hash = 'observatory'
+      setShareUrl(url.toString())
       try {
-        await navigator.clipboard.writeText(url.toString());
-        setShareState("Link copied");
+        await navigator.clipboard.writeText(url.toString())
+        setShareState('Link copied')
       } catch {
-        setShareState("Copy the link below");
+        setShareState('Copy the link below')
       }
     } catch (e) {
-      setShareState((e as Error).message);
+      setShareState((e as Error).message)
     }
   }
   const mapUrl = result
     ? `https://aladin.cds.unistra.fr/AladinLite/?target=${encodeURIComponent(`${result.query.ra} ${result.query.dec}`)}&fov=${result.query.size_deg}&survey=P%2FDSS2%2Fcolor`
-    : "";
+    : ''
   return (
     <section
       id="observatory"
-      className="mx-auto max-w-[1440px] scroll-mt-6 px-5 py-16 sm:px-10 lg:px-16"
+      className="mx-auto max-w-360 scroll-mt-6 px-5 py-16 sm:px-10 sm:py-20 lg:px-16"
     >
       <AnimatedContent distance={22}>
         <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="mb-3 font-mono text-[10px] tracking-[.2em] text-[#a68cbc]">
+            <p className="mb-3 font-mono text-[11px] tracking-[.14em] text-ink-dim">
               01 / THE OBSERVATORY
             </p>
-            <h2 className="font-display text-3xl tracking-[-.04em] sm:text-4xl">
+            <h2 className="font-display text-3xl tracking-[-.03em] sm:text-4xl">
               A little time travel.
               <br className="sm:hidden" /> A lot to discover.
             </h2>
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-[10px] text-[#a99db8]">
-            <Radio size={12} className="text-[#bda0ce]" /> SPHEREx archive ·
-            IRSA
+          <div className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-[11px] text-ink-dim">
+            <Radio size={12} className="text-lilac" /> SPHEREx archive · IRSA
           </div>
         </div>
       </AnimatedContent>
-      <div className="grid items-start gap-5 lg:grid-cols-[310px_minmax(0,1fr)] xl:grid-cols-[330px_minmax(0,1fr)]">
-        <div className="rounded-2xl border border-white/10 bg-[#101019] p-5 sm:p-6">
+      <div className="grid items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)] xl:gap-8">
+        <div className="rounded-xl border border-white/10 bg-panel p-5 sm:p-6">
           <div className="mb-5 flex items-center gap-2">
-            <Crosshair size={17} className="text-[#c5a6db]" />
+            <Crosshair size={17} className="text-lilac" />
             <h3 className="font-display text-lg">Choose your coordinates</h3>
           </div>
           <Form
             onSubmit={(e) => {
-              e.preventDefault();
-              void runSearch(form);
+              e.preventDefault()
+              void runSearch(form)
             }}
           >
             <SkyTextField
               label="OBJECT NAME"
               value={form.name}
-              onChange={(value) => set("name", value)}
+              onChange={(value) => set('name', value)}
               placeholder="e.g. Barnard’s Star"
             />
-            <div className="my-5 flex items-center gap-3 text-[10px] text-[#746a81]">
-              <span className="h-px flex-1 bg-white/8" /> OR ENTER A POSITION{" "}
+            <div className="my-5 flex items-center gap-3 text-[11px] text-ink-faint">
+              <span className="h-px flex-1 bg-white/8" /> OR ENTER A POSITION{' '}
               <span className="h-px flex-1 bg-white/8" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <SkyTextField
                 label="RIGHT ASCENSION"
                 value={form.ra}
-                onChange={(value) => set("ra", value)}
+                onChange={(value) => set('ra', value)}
                 placeholder="133.795129"
                 descriptionId="coordinate-help"
               />
               <SkyTextField
                 label="DECLINATION"
                 value={form.dec}
-                onChange={(value) => set("dec", value)}
+                onChange={(value) => set('dec', value)}
                 placeholder="−7.245147"
                 descriptionId="coordinate-help"
               />
             </div>
             <p
               id="coordinate-help"
-              className="mt-2 text-[10px] leading-4 text-[#8b8099]"
+              className="mt-2 text-[11px] leading-4 text-ink-faint"
             >
               Degrees or 08h55m10.831s / −7d14m42.53s. Coordinates take priority
               over the name.
@@ -258,14 +257,14 @@ export function Observatory() {
             <div className="mt-5">
               <FieldOfView
                 value={form.size}
-                onChange={(value) => set("size", value)}
+                onChange={(value) => set('size', value)}
               />
             </div>
             <div className="mt-5">
               <SkySelect
                 label="DETECTOR / WAVELENGTH"
                 value={form.band}
-                onChange={(value) => set("band", value)}
+                onChange={(value) => set('band', value)}
                 options={detectors.map((d) => ({
                   id: d.id,
                   label: `${d.id} · ${d.range} μm`,
@@ -277,22 +276,22 @@ export function Observatory() {
               <SkySelect
                 label="DATA RELEASE"
                 value={form.release}
-                onChange={(value) => set("release", value)}
+                onChange={(value) => set('release', value)}
                 options={[
                   {
-                    id: "auto",
-                    label: "Auto · QR3 → QR2",
-                    description: "Use QR2 when QR3 has no coverage",
+                    id: 'auto',
+                    label: 'Auto · QR3 → QR2',
+                    description: 'Use QR2 when QR3 has no coverage',
                   },
                   {
-                    id: "qr3",
-                    label: "QR3",
-                    description: "Quick Release 3 only",
+                    id: 'qr3',
+                    label: 'QR3',
+                    description: 'Quick Release 3 only',
                   },
                   {
-                    id: "qr2",
-                    label: "QR2",
-                    description: "Quick Release 2 only",
+                    id: 'qr2',
+                    label: 'QR2',
+                    description: 'Quick Release 2 only',
                   },
                 ]}
               />
@@ -300,7 +299,7 @@ export function Observatory() {
             <Button
               type="submit"
               isDisabled={loading}
-              className="mt-6 h-12 w-full rounded-xl bg-[#ceb0df] text-sm font-semibold text-[#23172c] hover:bg-[#e1c7ef]"
+              className="mt-6 h-12 w-full rounded-lg bg-lilac text-sm font-semibold text-void hover:bg-lilac-strong"
             >
               {loading ? (
                 <LoaderCircle
@@ -309,34 +308,34 @@ export function Observatory() {
                 />
               ) : (
                 <SearchIcon size={17} />
-              )}{" "}
-              {loading ? "Searching the archive…" : "Search the sky"}{" "}
+              )}{' '}
+              {loading ? 'Searching the archive…' : 'Search the sky'}{' '}
               {!loading && <ArrowRight size={17} className="ml-auto" />}
             </Button>
             {loading && (
               <Button
                 variant="ghost"
                 onPress={() => {
-                  controller.current?.abort();
-                  setLoading(false);
+                  controller.current?.abort()
+                  setLoading(false)
                 }}
-                className="mt-2 w-full text-xs text-[#bdafc9]"
+                className="mt-2 w-full text-xs text-ink-dim"
               >
                 <X size={14} /> Cancel search
               </Button>
             )}
           </Form>
-          <p className="mt-4 flex gap-2 text-[10px] leading-4 text-[#9689a5]">
+          <p className="mt-4 flex gap-2 text-[11px] leading-4 text-ink-faint">
             <Info size={12} className="mt-0.5 shrink-0" /> First searches can
             take 30–60 seconds or longer while images arrive from IRSA.
           </p>
           <div className="mt-6 border-t border-white/10 pt-5">
-            <p className="mb-3 font-mono text-[9px] tracking-widest text-[#8b8099]">
+            <p className="mb-3 font-mono text-[11px] tracking-[.1em] text-ink-faint">
               NOT SURE WHERE TO START?
             </p>
             <Link
               href={targetHref(targets[0])}
-              className="flex items-center justify-between text-xs text-[#cbb1dd]"
+              className="flex items-center justify-between text-xs text-lilac"
             >
               Try Barnard’s Star <ArrowUpRight size={14} />
             </Link>
@@ -345,13 +344,13 @@ export function Observatory() {
         <div className="min-w-0 space-y-4">
           <div
             ref={player}
-            className={`overflow-hidden rounded-2xl border border-white/12 bg-[#0c0c14] ${fullscreen ? "flex h-screen flex-col" : ""}`}
+            className={`overflow-hidden rounded-xl border border-white/12 bg-panel ${fullscreen ? 'flex h-screen flex-col' : ''}`}
           >
             <div className="flex items-center justify-between gap-2 border-b border-white/8 px-4 py-3 sm:px-5">
-              <span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-[#b9a9c7]">
+              <span className="flex items-center gap-2 font-mono text-[11px] tracking-[.1em] text-lilac">
                 <span
-                  className={`h-1.5 w-1.5 rounded-full ${loading ? "bg-amber-300" : result ? "bg-[#bfa0d9]" : "bg-[#71667e]"}`}
-                />{" "}
+                  className={`h-1.5 w-1.5 rounded-full ${loading ? 'bg-amber-300' : result ? 'bg-lilac' : 'bg-[#71667e]'}`}
+                />{' '}
                 BLINK VIEWER
               </span>
               <div className="flex gap-1">
@@ -360,35 +359,35 @@ export function Observatory() {
                   aria-label="Share search"
                   variant="ghost"
                   onPress={share}
-                  className="h-9 w-9 text-[#ab9db8]"
+                  className="h-9 w-9 text-ink-dim"
                 >
                   <Share2 size={15} />
                 </Button>
                 <Button
                   isIconOnly
                   aria-label={
-                    fullscreen ? "Exit fullscreen" : "Enter fullscreen"
+                    fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'
                   }
                   variant="ghost"
                   onPress={async () => {
                     try {
                       if (document.fullscreenElement)
-                        await document.exitFullscreen();
-                      else await player.current?.requestFullscreen();
+                        await document.exitFullscreen()
+                      else await player.current?.requestFullscreen()
                     } catch {
                       setShareState(
-                        "Fullscreen is unavailable in this browser.",
-                      );
+                        'Fullscreen is unavailable in this browser.',
+                      )
                     }
                   }}
-                  className="h-9 w-9 text-[#ab9db8]"
+                  className="h-9 w-9 text-ink-dim"
                 >
                   <Maximize2 size={15} />
                 </Button>
               </div>
             </div>
             <div
-              className={`relative flex min-h-[330px] w-full min-w-0 items-center justify-center overflow-hidden bg-[#05050a] ${fullscreen ? "flex-1" : "aspect-[1.65/1]"}`}
+              className={`relative flex min-h-[330px] w-full min-w-0 items-center justify-center overflow-hidden bg-void ${fullscreen ? 'flex-1' : 'aspect-[1.65/1]'}`}
             >
               <div
                 aria-hidden="true"
@@ -401,7 +400,7 @@ export function Observatory() {
                     key={f.id}
                     src={f.image_url}
                     alt={`SPHEREx ${f.detector} observation at ${f.obs_iso}`}
-                    className={`absolute inset-0 h-full w-full object-contain [image-rendering:pixelated] ${i === index && !failed.includes(f.id) ? "visible" : "invisible"}`}
+                    className={`absolute inset-0 h-full w-full object-contain [image-rendering:pixelated] ${i === index && !failed.includes(f.id) ? 'visible' : 'invisible'}`}
                     onLoad={() =>
                       setLoaded((old) =>
                         old.includes(f.id) ? old : [...old, f.id],
@@ -425,13 +424,13 @@ export function Observatory() {
                     role="status"
                   >
                     <LoaderCircle
-                      className="mx-auto mb-5 animate-spin text-[#c5a6db] motion-reduce:animate-none"
+                      className="mx-auto mb-5 animate-spin text-lilac motion-reduce:animate-none"
                       size={34}
                     />
                     <h3 className="font-display text-xl">
                       Collecting a moment in time
                     </h3>
-                    <p className="mt-3 text-xs leading-6 text-[#9f91af]">
+                    <p className="mt-3 text-[13px] leading-6 text-ink-faint">
                       Searching coverage and preparing infrared cutouts.
                       <br />
                       The first visit to a field can take a few minutes.
@@ -452,13 +451,13 @@ export function Observatory() {
                     <h3 className="font-display text-xl">
                       We couldn’t reach that sky
                     </h3>
-                    <p className="mt-3 break-words text-sm leading-6 text-[#b1a4bd]">
+                    <p className="mt-3 break-words text-sm leading-6 text-ink-dim">
                       {error}
                     </p>
                     <Button
                       onPress={() => runSearch(form)}
                       variant="ghost"
-                      className="mt-3 text-[#d5bce6]"
+                      className="mt-3 text-ink"
                     >
                       Try again <ArrowRight size={14} />
                     </Button>
@@ -471,22 +470,22 @@ export function Observatory() {
                     className="relative w-full min-w-0 px-6 text-center"
                     role="status"
                   >
-                    <div className="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-[#b598cb]/20">
-                      <div className="absolute inset-3 rounded-full border border-dashed border-[#b598cb]/25" />
-                      <StarMark className="h-10 w-10 text-[#b99fce]" />
+                    <div className="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-lilac/20">
+                      <div className="absolute inset-3 rounded-full border border-dashed border-lilac/25" />
+                      <StarMark className="h-10 w-10 text-lilac" />
                     </div>
-                    <h3 className="font-display text-xl text-[#e0d4e9]">
+                    <h3 className="font-display text-xl text-ink">
                       {result
-                        ? "A quiet patch of sky"
-                        : "Your next discovery starts here"}
+                        ? 'A quiet patch of sky'
+                        : 'Your next discovery starts here'}
                     </h3>
-                    <p className="mx-auto mt-3 max-w-xs text-xs leading-6 text-[#9587a5]">
+                    <p className="mx-auto mt-3 max-w-xs text-[13px] leading-6 text-ink-faint">
                       {result
-                        ? "No images cover this position in the selected detector and release. Try Auto, another detector, or a nearby field."
-                        : "Enter a position or choose a target. We’ll bring you the same sky, at different moments."}
+                        ? 'No images cover this position in the selected detector and release. Try Auto, another detector, or a nearby field.'
+                        : 'Enter a position or choose a target. We’ll bring you the same sky, at different moments.'}
                     </p>
-                    <span className="mt-6 inline-block font-mono text-[9px] tracking-[.2em] text-[#746580]">
-                      {result ? "NO COVERAGE FOUND" : "AWAITING COORDINATES"}
+                    <span className="mt-6 inline-block font-mono text-[11px] tracking-[.14em] text-ink-faint">
+                      {result ? 'NO COVERAGE FOUND' : 'AWAITING COORDINATES'}
                     </span>
                   </motion.div>
                 ) : frame && failed.includes(frame.id) ? (
@@ -500,14 +499,14 @@ export function Observatory() {
                       className="mx-auto mb-3 text-[#d7b79c]"
                     />
                     <p>This frame couldn’t load.</p>
-                    <p className="mt-2 text-xs text-[#a99bb7]">
+                    <p className="mt-2 text-xs text-ink-dim">
                       Use the timeline to inspect another observation.
                     </p>
                   </div>
                 ) : frame && !loaded.includes(frame.id) ? (
                   <div
                     key="image-loading"
-                    className="relative flex items-center gap-2 text-sm text-[#c5a6db]"
+                    className="relative flex items-center gap-2 text-sm text-lilac"
                     role="status"
                   >
                     <LoaderCircle size={18} className="animate-spin" /> Loading
@@ -515,21 +514,21 @@ export function Observatory() {
                   </div>
                 ) : null}
               </AnimatePresence>
-              <span className="pointer-events-none absolute left-4 top-4 font-mono text-[9px] text-[#9e90ae]">
+              <span className="pointer-events-none absolute left-4 top-4 font-mono text-[11px] text-ink-faint">
                 {result
                   ? `${result.query.band} / ${result.query.release.toUpperCase()}`
-                  : "SPHEREx / NEAR-INFRARED"}
+                  : 'SPHEREx / NEAR-INFRARED'}
               </span>
-              <span className="pointer-events-none absolute bottom-4 right-4 font-mono text-[9px] text-[#9e90ae]">
+              <span className="pointer-events-none absolute bottom-4 right-4 font-mono text-[11px] text-ink-faint">
                 {frame
-                  ? `FRAME ${String(index + 1).padStart(2, "0")} / ${String(frames.length).padStart(2, "0")}`
-                  : "FRAME — / —"}
+                  ? `FRAME ${String(index + 1).padStart(2, '0')} / ${String(frames.length).padStart(2, '0')}`
+                  : 'FRAME — / —'}
               </span>
             </div>
             <div className="border-t border-white/10 px-4 pb-5 pt-4 sm:px-5">
-              <div className="mb-3 flex justify-between font-mono text-[9px] text-[#8e809e]">
-                <span>{frames[0]?.obs_iso.slice(0, 10) || "EARLIEST"}</span>
-                <span>{frames.at(-1)?.obs_iso.slice(0, 10) || "LATEST"}</span>
+              <div className="mb-3 flex justify-between font-mono text-[11px] text-ink-faint">
+                <span>{frames[0]?.obs_iso.slice(0, 10) || 'EARLIEST'}</span>
+                <span>{frames.at(-1)?.obs_iso.slice(0, 10) || 'LATEST'}</span>
               </div>
               <Slider
                 aria-label="Observation timeline"
@@ -539,14 +538,14 @@ export function Observatory() {
                 value={index}
                 isDisabled={!canPlay}
                 onChange={(value) => {
-                  setIndex(Array.isArray(value) ? value[0] : value);
-                  setPlaying(false);
+                  setIndex(Array.isArray(value) ? value[0] : value)
+                  setPlaying(false)
                 }}
                 className="w-full gap-0 data-disabled:opacity-35"
               >
-                <Slider.Track className="h-2 rounded-full bg-[#30253b]">
-                  <Slider.Fill className="bg-linear-to-r from-[#8461a5] to-[#dcbaee]" />
-                  <Slider.Thumb className="size-4 border-2 border-[#ead8f4] bg-[#c29fd8] shadow-[0_0_15px_#c29fd850]" />
+                <Slider.Track className="h-1.5 rounded-full bg-white/15">
+                  <Slider.Fill className="bg-lilac" />
+                  <Slider.Thumb className="size-4 border-2 border-void bg-lilac" />
                 </Slider.Track>
               </Slider>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -557,16 +556,16 @@ export function Observatory() {
                     variant="ghost"
                     isDisabled={!canPlay}
                     onPress={() => step(-1)}
-                    className="h-10 w-10 text-[#c9bad5]"
+                    className="h-10 w-10 text-ink-dim"
                   >
                     <SkipBack size={16} />
                   </Button>
                   <Button
                     isIconOnly
-                    aria-label={playing ? "Pause playback" : "Play playback"}
+                    aria-label={playing ? 'Pause playback' : 'Play playback'}
                     isDisabled={!canPlay}
                     onPress={() => setPlaying(!playing)}
-                    className="h-10 w-10 rounded-full bg-[#cfb0e0] text-[#23182d]"
+                    className="h-10 w-10 rounded-full bg-lilac text-void"
                   >
                     {playing ? <Pause size={16} /> : <Play size={16} />}
                   </Button>
@@ -576,7 +575,7 @@ export function Observatory() {
                     variant="ghost"
                     isDisabled={!canPlay}
                     onPress={() => step(1)}
-                    className="h-10 w-10 text-[#c9bad5]"
+                    className="h-10 w-10 text-ink-dim"
                   >
                     <SkipForward size={16} />
                   </Button>
@@ -593,15 +592,15 @@ export function Observatory() {
                   />
                 </div>
                 <div className="text-right">
-                  <p className="font-mono text-[10px] text-[#cfbfdc]">
+                  <p className="font-mono text-[11px] text-ink-dim">
                     {frame
-                      ? frame.obs_iso.replace("T", " · ").replace("Z", " UTC")
-                      : "No observation selected"}
+                      ? frame.obs_iso.replace('T', ' · ').replace('Z', ' UTC')
+                      : 'No observation selected'}
                   </p>
-                  <p className="mt-1 text-[10px] text-[#81738f]">
+                  <p className="mt-1 text-[11px] text-ink-faint">
                     {frame
-                      ? `${frame.detector} · ${frame.wavelength_um.join("–")} μm · ${index + 1} of ${frames.length}`
-                      : "Up to 8 epochs · oldest first"}
+                      ? `${frame.detector} · ${frame.wavelength_um.join('–')} μm · ${index + 1} of ${frames.length}`
+                      : 'Up to 8 epochs · oldest first'}
                   </p>
                 </div>
               </div>
@@ -610,10 +609,10 @@ export function Observatory() {
           {shareState && (
             <div
               role="status"
-              className="rounded-xl border border-[#bfa0d9]/20 bg-[#181020] p-3 text-xs text-[#d0b4e2]"
+              className="rounded-xl border border-lilac/20 bg-panel p-3 text-xs text-ink"
             >
               <span className="flex items-center gap-2">
-                {shareState === "Link copied" && <Check size={14} />}{" "}
+                {shareState === 'Link copied' && <Check size={14} />}{' '}
                 {shareState}
               </span>
               {shareUrl && (
@@ -622,34 +621,34 @@ export function Observatory() {
                   readOnly
                   value={shareUrl}
                   onFocus={(e) => e.target.select()}
-                  className="mt-2 w-full bg-[#0e0a15] text-xs"
+                  className="mt-2 w-full bg-panel-2 text-xs"
                 />
               )}
             </div>
           )}
           {result && (
-            <div className="rounded-xl border border-white/10 bg-[#101019] p-4">
-              <p className="mb-3 font-mono text-[9px] tracking-widest text-[#a48cb8]">
+            <div className="border-t border-white/10 pt-5">
+              <p className="mb-3 font-mono text-[11px] tracking-[.1em] text-ink-dim">
                 ACTUAL SEARCH POSITION
               </p>
               <dl className="grid grid-cols-2 gap-4 text-xs sm:grid-cols-5">
                 {[
-                  ["RA", `${result.query.ra}°`],
-                  ["DEC", `${result.query.dec}°`],
-                  ["FIELD", `${result.query.size_deg}°`],
-                  ["DETECTOR", result.query.band],
-                  ["RELEASE", result.query.release.toUpperCase()],
+                  ['RA', `${result.query.ra}°`],
+                  ['DEC', `${result.query.dec}°`],
+                  ['FIELD', `${result.query.size_deg}°`],
+                  ['DETECTOR', result.query.band],
+                  ['RELEASE', result.query.release.toUpperCase()],
                 ].map(([key, value]) => (
                   <div key={key}>
-                    <dt className="mb-1 text-[9px] text-[#85758f]">{key}</dt>
-                    <dd className="font-mono text-[11px] text-[#cdbdd8]">
+                    <dt className="mb-1 text-[11px] text-ink-faint">{key}</dt>
+                    <dd className="font-mono text-[11px] text-ink-dim">
                       {value}
                     </dd>
                   </div>
                 ))}
               </dl>
-              {requestedRelease === "auto" &&
-                result.query.release === "qr2" && (
+              {requestedRelease === 'auto' &&
+                result.query.release === 'qr2' && (
                   <p
                     role="status"
                     className="mt-4 text-xs leading-5 text-[#d8bd9c]"
@@ -668,32 +667,32 @@ export function Observatory() {
               <TriangleAlert size={16} className="shrink-0" />
               {result.dropped > 0
                 ? `${result.dropped} cutout(s) failed at the archive. `
-                : ""}
+                : ''}
               {failed.length > 0
                 ? `${failed.length} image(s) failed to load in your browser. `
-                : ""}
+                : ''}
               The available observations remain usable.
             </p>
           )}
           <div className="grid gap-4 sm:grid-cols-[1fr_1.1fr]">
-            <div className="rounded-xl border border-white/10 bg-[#101019] p-5">
-              <p className="mb-3 flex items-center gap-2 text-xs text-[#d0badf]">
+            <div className="border-t border-white/10 pt-5 sm:pr-4">
+              <p className="mb-3 flex items-center gap-2 text-xs text-lilac">
                 <Telescope size={15} /> A tip from the observatory
               </p>
-              <p className="text-xs leading-6 text-[#9688a6]">
+              <p className="text-[13px] leading-6 text-ink-faint">
                 Look for a point that shifts against its neighbors. A changing
                 glow may indicate a variable star. Compare the same detector and
                 similar wavelengths.
               </p>
               <Link
                 href="/about#reading-the-sky"
-                className="mt-3 inline-flex items-center gap-2 text-[11px] text-[#c4a5d7]"
+                className="mt-3 inline-flex items-center gap-2 text-[11px] text-lilac"
               >
                 Learn what to look for <ArrowUpRight size={12} />
               </Link>
             </div>
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-[#101019]">
-              <div className="flex items-center justify-between px-4 py-3 text-[10px] text-[#b7a6c6]">
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-panel">
+              <div className="flex items-center justify-between px-4 py-3 text-[11px] text-lilac">
                 <span className="flex items-center gap-2">
                   <Crosshair size={12} /> SKY CONTEXT · DSS2
                 </span>
@@ -718,19 +717,19 @@ export function Observatory() {
                   allowFullScreen
                 />
               ) : (
-                <div className="flex h-32 items-center justify-center gap-2 border-t border-white/5 font-mono text-[9px] text-[#756583]">
-                  <Crosshair size={25} className="text-[#645472]" /> YOUR FIELD,
+                <div className="flex h-32 items-center justify-center gap-2 border-t border-white/5 font-mono text-[11px] text-ink-faint">
+                  <Crosshair size={25} className="text-ink-faint" /> YOUR FIELD,
                   IN CONTEXT
                 </div>
               )}
-              <p className="px-4 py-2 text-[9px] text-[#81728f]">
+              <p className="px-4 py-2 text-[11px] text-ink-faint">
                 Aladin Lite / CDS · reference survey, not SPHEREx
               </p>
             </div>
           </div>
         </div>
       </div>
-      <div className="mt-6 flex items-start gap-2 text-[10px] leading-5 text-[#81748e]">
+      <div className="mt-6 flex items-start gap-2 text-[11px] leading-5 text-ink-faint">
         <Info size={13} className="mt-1 shrink-0" />
         <p>
           These images are independently contrast-stretched and are not
@@ -739,26 +738,26 @@ export function Observatory() {
           calibrated data.
         </p>
       </div>
-      <div className="mt-16 flex flex-col justify-between gap-6 rounded-2xl border border-[#b296c7]/15 bg-linear-to-r from-[#21162d] via-[#141020] to-[#101019] p-7 sm:flex-row sm:items-center sm:p-9">
+      <div className="mt-16 flex flex-col justify-between gap-6 border-t border-white/10 pt-10 sm:flex-row sm:items-center">
         <div>
-          <p className="font-mono text-[9px] tracking-widest text-[#a38cb6]">
+          <p className="font-mono text-[11px] tracking-[.1em] text-ink-dim">
             SOMEWHERE TO BEGIN
           </p>
           <h3 className="mt-3 font-display text-2xl tracking-tight">
             Five little corners of a very big universe.
           </h3>
-          <p className="mt-2 text-xs text-[#a092af]">
+          <p className="mt-2 text-xs text-ink-faint">
             Meet the fast movers, faint neighbors, and stars that won’t sit
             still.
           </p>
         </div>
         <Link
           href="/targets"
-          className="flex shrink-0 items-center gap-6 rounded-full border border-[#c4a6d7]/30 px-6 py-3 text-sm text-[#d9c3e8] hover:bg-white/5"
+          className="flex shrink-0 items-center gap-4 rounded-lg border border-white/20 px-5 py-3 text-sm text-ink hover:bg-white/5"
         >
           Explore targets <ArrowUpRight size={16} />
         </Link>
       </div>
     </section>
-  );
+  )
 }

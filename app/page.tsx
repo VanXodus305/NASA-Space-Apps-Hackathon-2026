@@ -1,13 +1,13 @@
-import { Suspense } from "react";
-import { HomeHero } from "@/components/home-hero";
-import { Observatory } from "@/components/observatory";
+import { Suspense } from 'react'
+import { HomeHero } from '@/components/home-hero'
+import { Observatory } from '@/components/observatory'
 export default function Home() {
   return (
     <>
       <HomeHero />
       <Suspense
         fallback={
-          <div className="p-16 text-center text-[#c5a6db]">
+          <div className="mx-auto max-w-360 px-5 py-24 text-center text-lilac sm:px-10 lg:px-16">
             Opening the observatory…
           </div>
         }
@@ -15,5 +15,5 @@ export default function Home() {
         <Observatory />
       </Suspense>
     </>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   Description,
@@ -9,12 +9,12 @@ import {
   NumberField,
   Select,
   TextField,
-} from "@heroui/react";
-import { Minus, Plus } from "lucide-react";
+} from '@heroui/react'
+import { Minus, Plus } from 'lucide-react'
 
 export const fieldClass =
-  "h-11 w-full rounded-xl border border-white/12 bg-[#0c0c17] px-3 text-sm text-[#e6ddec] outline-none transition focus:border-[#b796d2] focus:ring-2 focus:ring-[#b796d2]/20";
-const labelClass = "text-[11px] font-medium text-[#b1a5bd]";
+  'h-11 w-full rounded-lg border border-white/12 bg-panel-2 px-3 text-sm text-ink outline-none transition-colors placeholder:text-ink-faint hover:border-white/20 focus:border-lilac/70 focus:ring-2 focus:ring-lilac/20'
+const labelClass = 'text-xs font-medium text-ink-dim'
 
 export function SkyTextField({
   label,
@@ -23,11 +23,11 @@ export function SkyTextField({
   placeholder,
   descriptionId,
 }: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  descriptionId?: string;
+  label: string
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  descriptionId?: string
 }) {
   return (
     <TextField
@@ -39,7 +39,7 @@ export function SkyTextField({
       <Label className={labelClass}>{label}</Label>
       <Input className={fieldClass} placeholder={placeholder} />
     </TextField>
-  );
+  )
 }
 
 export function SkySelect({
@@ -50,115 +50,111 @@ export function SkySelect({
   compact = false,
   portalContainer,
 }: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: { id: string; label: string; description?: string }[];
-  compact?: boolean;
-  portalContainer?: Element | null;
+  label: string
+  value: string
+  onChange: (value: string) => void
+  options: { id: string; label: string; description?: string }[]
+  compact?: boolean
+  portalContainer?: Element | null
 }) {
   return (
     <Select
       aria-label={compact ? label : undefined}
       value={value}
       onChange={(key) => {
-        if (key !== null) onChange(String(key));
+        if (key !== null) onChange(String(key))
       }}
-      className={compact ? "ml-2 w-28" : "w-full gap-2"}
+      className={compact ? 'ml-2 w-32' : 'w-full gap-2'}
     >
       {!compact && <Label className={labelClass}>{label}</Label>}
       <Select.Trigger
-        className={
-          compact
-            ? "relative flex h-10 w-full items-center justify-center rounded-lg border border-white/15 bg-[#15111f] px-7 py-0 text-center font-mono text-[10px] text-[#d8c6e5]"
-            : `${fieldClass} relative flex items-center justify-center px-10 py-0 text-center hover:border-[#cbb0df]/50 data-focus-visible:ring-2 data-focus-visible:ring-[#b796d2]/40`
-        }
+        className={`flex w-full items-center justify-between gap-2 rounded-lg border border-white/12 bg-panel-2 px-3 text-left text-ink outline-none transition-colors hover:border-white/25 aria-expanded:border-lilac/60 data-focus-visible:border-lilac/70 data-focus-visible:ring-2 data-focus-visible:ring-lilac/25 ${compact ? 'h-10 font-mono text-xs' : 'h-11 text-sm'}`}
       >
-        <Select.Value className="flex min-w-0 flex-1 items-center justify-center truncate text-center leading-none" />
-        <Select.Indicator className="absolute right-3 top-1/2 -translate-y-1/2 text-[#c5a6db]" />
+        <Select.Value className="min-w-0 flex-1 truncate text-left" />
+        <Select.Indicator className="size-4 shrink-0 text-lilac" />
       </Select.Trigger>
       <Select.Popover
         UNSTABLE_portalContainer={portalContainer ?? undefined}
-        className="z-50 min-w-(--trigger-width) rounded-2xl border border-[#c7a3dd]/25 bg-[#171120] p-1.5 shadow-[0_16px_60px_#0009]"
+        className="z-50 min-w-(--trigger-width) overflow-hidden rounded-lg border border-white/12 bg-panel p-0 shadow-xl shadow-black/50"
       >
-        <ListBox className="outline-none">
+        <ListBox className="max-h-[inherit] overflow-y-auto p-1 outline-none">
           {options.map((option) => (
             <ListBox.Item
               key={option.id}
               id={option.id}
               aria-label={option.label}
               textValue={option.label}
-              className="gap-2 rounded-xl px-8 py-3 text-[#dac8e6] data-focused:bg-[#35223f] data-selected:bg-[#b99ccc]/15"
+              className="flex cursor-default items-center gap-3 rounded-md px-3 py-2 text-ink-dim outline-none transition-colors data-focused:bg-white/8 data-focused:text-ink data-selected:text-ink"
             >
-              <div className="flex-1 text-center">
-                <Label className="mx-auto block text-xs text-inherit">
+              <span className="flex min-w-0 flex-1 flex-col text-left">
+                <span className={compact ? 'font-mono text-xs' : 'text-sm'}>
                   {option.label}
-                </Label>
+                </span>
                 {option.description && (
-                  <Description className="mt-1 block text-[10px] text-[#a695b6]">
+                  <span className="mt-0.5 text-xs text-ink-faint">
                     {option.description}
-                  </Description>
+                  </span>
                 )}
-              </div>
-              <ListBox.ItemIndicator className="text-[#d5b0ed]" />
+              </span>
+              <ListBox.ItemIndicator className="shrink-0 text-lilac" />
             </ListBox.Item>
           ))}
         </ListBox>
       </Select.Popover>
     </Select>
-  );
+  )
 }
 
 export function FieldOfView({
   value,
   onChange,
 }: {
-  value: string;
-  onChange: (value: string) => void;
+  value: string
+  onChange: (value: string) => void
 }) {
   return (
     <NumberField
-      value={value === "" ? NaN : Number(value)}
+      value={value === '' ? NaN : Number(value)}
       onChange={(number) =>
-        onChange(Number.isNaN(number) ? "" : String(number))
+        onChange(Number.isNaN(number) ? '' : String(number))
       }
       commitBehavior="validate"
       isRequired
       minValue={0}
       validate={(number) =>
-        number > 0 ? null : "Enter a field of view greater than zero."
+        number > 0 ? null : 'Enter a field of view greater than zero.'
       }
       maxValue={0.5}
-      step={10 ** -Math.max(2, Math.min(6, (value.split(".")[1] ?? "").length))}
+      step={10 ** -Math.max(2, Math.min(6, (value.split('.')[1] ?? '').length))}
       formatOptions={{ maximumFractionDigits: 6, useGrouping: false }}
       className="w-full gap-2"
     >
       <Label className={labelClass}>FIELD OF VIEW</Label>
-      <NumberField.Group className="relative h-12 w-full rounded-xl border border-white/12 bg-[#0c0c17] focus-within:border-[#b796d2] focus-within:ring-2 focus-within:ring-[#b796d2]/20">
+      <NumberField.Group className="relative flex h-11 w-full items-center overflow-hidden rounded-lg border border-white/12 bg-panel-2 transition-colors hover:border-white/20 focus-within:border-lilac/70 focus-within:ring-2 focus-within:ring-lilac/20">
         <NumberField.DecrementButton
           aria-label="Decrease field of view"
-          className="h-full w-11 text-[#c9a9df] hover:bg-[#b99ccc]/10"
+          className="h-full w-11 text-lilac hover:bg-white/8"
         >
           <Minus size={15} />
         </NumberField.DecrementButton>
-        <NumberField.Input className="min-w-0 bg-transparent text-center font-mono text-sm text-[#e6ddec]" />
+        <NumberField.Input className="min-w-0 bg-transparent text-center font-mono text-sm text-ink" />
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute right-14 text-xs text-[#94839f]"
+          className="pointer-events-none absolute right-14 text-xs text-ink-faint"
         >
           °
         </span>
         <NumberField.IncrementButton
           aria-label="Increase field of view"
-          className="h-full w-11 text-[#c9a9df] hover:bg-[#b99ccc]/10"
+          className="h-full w-11 text-lilac hover:bg-white/8"
         >
           <Plus size={15} />
         </NumberField.IncrementButton>
       </NumberField.Group>
-      <Description className="text-[10px] text-[#94839f]">
+      <Description className="text-xs text-ink-faint">
         Degrees · max 0.5° · precise decimal input
       </Description>
       <FieldError className="text-xs text-[#f2b6bd]" />
     </NumberField>
-  );
+  )
 }
