@@ -7,24 +7,26 @@ import {
   MoveUpRight,
   Sparkles,
 } from "lucide-react";
-import { detectors } from "@/lib/spherex";
+import { DetectorTable } from "@/components/detector-table";
+import { MotionSection, KineticHeading } from "@/components/motion-effects";
 import { Cosmos } from "@/components/cosmos";
 export const metadata: Metadata = { title: "About the mission" };
 export default function About() {
   return (
     <>
-      <section className="relative isolate overflow-hidden border-b border-white/10">
+      <MotionSection className="relative isolate overflow-hidden border-b border-white/10">
         <Cosmos />
         <div className="absolute inset-0 bg-linear-to-r from-[#08080e] via-[#08080e]/70 to-[#08080e]/10" />
         <div className="relative mx-auto max-w-[1440px] px-5 py-20 sm:px-10 lg:px-16">
           <p className="mb-6 font-mono text-[10px] tracking-[.2em] text-[#b69bc9]">
             THE MISSION / A DIFFERENT KIND OF VISION
           </p>
-          <h1 className="font-display text-5xl font-medium leading-[1.05] tracking-[-.06em] sm:text-7xl">
-            There’s more
-            <br />
-            than <span className="text-[#b99ccc]">meets the eye.</span>
-          </h1>
+          <KineticHeading
+            lines={["There’s more", "than meets the eye."]}
+            accentWord="eye."
+            className="font-display text-5xl font-medium leading-[1.05] tracking-[-.06em] sm:text-7xl"
+          />
+
           <p className="mt-7 max-w-lg text-sm leading-7 text-[#b0a1bc]">
             Visible light tells only part of the story. SPHEREx opens a window
             into the infrared universe—and you’re invited to look through it.
@@ -36,9 +38,9 @@ export default function About() {
             Get to know your telescope <ArrowDown size={14} />
           </a>
         </div>
-      </section>
+      </MotionSection>
       <div className="mx-auto max-w-[1440px] px-5 py-16 sm:px-10 lg:px-16">
-        <section
+        <MotionSection
           id="mission"
           className="grid gap-8 border-b border-white/10 pb-16 md:grid-cols-[1fr_1.3fr]"
         >
@@ -76,8 +78,8 @@ export default function About() {
               Explore the mission at IRSA <ArrowUpRight size={13} />
             </a>
           </div>
-        </section>
-        <section className="py-16">
+        </MotionSection>
+        <MotionSection className="py-16">
           <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
             <div>
               <p className="font-mono text-[10px] tracking-widest text-[#a889be]">
@@ -92,55 +94,7 @@ export default function About() {
               individual observations can sample narrower wavelength intervals.
             </p>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-white/10">
-            <table className="w-full text-left text-sm">
-              <caption className="sr-only">
-                SPHEREx detector wavelength ranges and spectral resolving powers
-              </caption>
-              <thead className="bg-[#1b1424] text-[10px] text-[#c4a8d7]">
-                <tr>
-                  <th scope="col" className="px-5 py-4 font-medium">
-                    DETECTOR
-                  </th>
-                  <th scope="col" className="px-5 py-4 font-medium">
-                    WAVELENGTH (μm)
-                  </th>
-                  <th scope="col" className="px-5 py-4 font-medium">
-                    RESOLVING POWER
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {detectors.map((d, i) => (
-                  <tr
-                    key={d.id}
-                    className="border-t border-white/8 bg-[#101019] text-[#c9b9d6]"
-                  >
-                    <th scope="row" className="px-5 py-4 font-mono font-normal">
-                      <span
-                        className="mr-3 inline-block h-2 w-2 rounded-full"
-                        style={{
-                          backgroundColor: [
-                            "#e4c4eb",
-                            "#c8abdf",
-                            "#ac9ad3",
-                            "#8a88bf",
-                            "#7375aa",
-                            "#575d91",
-                          ][i],
-                        }}
-                      />
-                      {d.id}
-                    </th>
-                    <td className="px-5 py-4 font-mono text-xs">{d.range}</td>
-                    <td className="px-5 py-4 font-mono text-xs">
-                      R = {d.resolving}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DetectorTable />
           <a
             href="https://irsa.ipac.caltech.edu/onlinehelp/spherex/spherex/overview.html"
             target="_blank"
@@ -149,8 +103,8 @@ export default function About() {
           >
             Detector specifications: IRSA instrument overview ↗
           </a>
-        </section>
-        <section className="border-y border-white/10 py-16">
+        </MotionSection>
+        <MotionSection className="border-y border-white/10 py-16">
           <p className="font-mono text-[10px] tracking-widest text-[#a889be]">
             03 / YOUR FIRST OBSERVATION
           </p>
@@ -187,8 +141,8 @@ export default function About() {
               </div>
             ))}
           </div>
-        </section>
-        <section id="reading-the-sky" className="scroll-mt-8 py-16">
+        </MotionSection>
+        <MotionSection id="reading-the-sky" className="scroll-mt-8 py-16">
           <p className="font-mono text-[10px] tracking-widest text-[#a889be]">
             04 / READING THE SKY
           </p>
@@ -233,7 +187,7 @@ export default function About() {
               </p>
             </div>
           </div>
-        </section>
+        </MotionSection>
         <div className="rounded-2xl border border-[#b69bc9]/20 bg-linear-to-r from-[#261a32] to-[#11101c] px-7 py-12 text-center">
           <p className="font-mono text-[10px] tracking-widest text-[#b195c6]">
             NO TELESCOPE REQUIRED. JUST CURIOSITY.

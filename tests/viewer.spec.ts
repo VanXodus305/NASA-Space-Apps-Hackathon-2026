@@ -95,9 +95,12 @@ test("shared WISE search omits release, sorts epochs, plays, pauses, scrubs, and
   await expect(
     page.getByRole("button", { name: "Pause playback" }),
   ).toBeVisible();
-  await expect(page.getByLabel("Observation timeline")).not.toHaveValue("1");
+  await expect(
+    page.getByRole("slider", { name: "Observation timeline" }),
+  ).not.toHaveValue("1");
   await page.getByRole("button", { name: "Pause playback" }).click();
-  await page.getByLabel("Observation timeline").fill("0");
+  await page.getByRole("slider", { name: "Observation timeline" }).focus();
+  await page.keyboard.press("Home");
   await expect(page.getByText("2025-06-01 · 02:52:00 UTC")).toBeVisible();
   await page.getByRole("button", { name: "Share search" }).click();
   await expect(page.getByText("Link copied", { exact: true })).toBeVisible();
@@ -114,7 +117,8 @@ test("coordinate precedence and colon normalization", async ({ page }) => {
     .getByLabel("RIGHT ASCENSION", { exact: true })
     .fill("08:55:10.831");
   await page.getByLabel("DECLINATION", { exact: true }).fill("-7:14:42.53");
-  await page.getByLabel("DATA RELEASE", { exact: true }).selectOption("qr3");
+  await page.getByRole("button", { name: /DATA RELEASE/ }).click();
+  await page.getByRole("option", { name: "QR3", exact: true }).click();
   const pending = page.waitForRequest((r) => r.url().includes("/api/frames?"));
   await page.getByRole("button", { name: "Search the sky" }).click();
   const url = new URL((await pending).url());
@@ -179,4 +183,122 @@ test("all five presets auto-run and filters work", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Barnard’s Star" }),
   ).toHaveCount(0);
+});
+
+test("HeroUI dropdowns, number controls and timeline support keyboard input", async ({
+  page,
+}) => {
+  await mock(page);
+  await page.goto("/?name=RW+Aur");
+  await expect(page.getByText("ACTUAL SEARCH POSITION")).toBeVisible();
+  await page.getByRole("button", { name: /DETECTOR \/ WAVELENGTH/ }).click();
+  await expect(page.getByRole("listbox")).toBeVisible();
+  await page.getByRole("option", { name: /D6 ·/ }).click();
+  await expect(
+    page.getByRole("button", { name: /DETECTOR \/ WAVELENGTH/ }),
+  ).toContainText("D6");
+  await page.getByRole("button", { name: "Increase field of view" }).click();
+  const size = page.getByRole("textbox", { name: /FIELD OF VIEW/ });
+  await expect(size).toHaveValue("0.11");
+  const increment = await page
+    .getByRole("button", { name: /Increase field of view/ })
+    .boundingBox();
+  const decrement = await page
+    .getByRole("button", { name: /Decrease field of view/ })
+    .boundingBox();
+  expect(Math.abs(increment!.y - decrement!.y)).toBeLessThan(1);
+  expect(increment!.x).toBeGreaterThan(decrement!.x);
+  await size.fill("0.123456");
+  await size.press("Tab");
+  await expect(size).toHaveValue("0.123456");
+  const preciseRequest = page.waitForRequest((r) =>
+    r.url().includes("/api/frames?"),
+  );
+  await page.getByRole("button", { name: "Search the sky" }).click();
+  expect(new URL((await preciseRequest).url()).searchParams.get("size")).toBe(
+    "0.123456",
+  );
+  await expect(page.getByText("ACTUAL SEARCH POSITION")).toBeVisible();
+  await page.getByRole("button", { name: /Playback speed/ }).click();
+  await page.keyboard.press("End");
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("button", { name: /Playback speed/ }),
+  ).toContainText("4×");
+  const timeline = page.getByRole("slider", { name: "Observation timeline" });
+  await timeline.focus();
+  await timeline.press("End");
+  await expect(page.getByText("2025-06-03 · 02:52:00 UTC")).toBeVisible();
+  await timeline.press("Home");
+  await expect(page.getByText("2025-06-01 · 02:52:00 UTC")).toBeVisible();
+});
+
+test("motion-enabled navigation and magnetic links remain interactive", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const cta = page.getByRole("link", { name: "Explore the sky", exact: true });
+  await cta.hover();
+  await cta.click();
+  await expect(
+    page.getByRole("button", { name: "Search the sky" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /DETECTOR \/ WAVELENGTH/ }).click();
+  await expect(page.getByRole("listbox")).toBeVisible();
+  await expect(page.locator("[data-slot=select-popover]")).toHaveCSS(
+    "opacity",
+    "1",
+  );
+  await page.screenshot({ path: "test-results/heroui-dropdown.png" });
+  await page.keyboard.press("Escape");
+  await page.getByRole("link", { name: "Targets", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: /Small lights/ }),
+  ).toBeVisible();
+  await page.locator(".card").first().hover();
+  await page.getByRole("button", { name: "Brightness", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "RW Aurigae", exact: true }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("dropdown values are centered and the hero animates only when motion is enabled", async ({
+  page,
+}) => {
+  await page.goto("/");
+  for (const name of [
+    /DETECTOR \/ WAVELENGTH/,
+    /DATA RELEASE/,
+    /Playback speed/,
+  ]) {
+    const trigger = page.getByRole("button", { name });
+    const offset = await trigger.evaluate((element) => {
+      const value = element.querySelector('[data-slot="select-value"]')!;
+      const range = document.createRange();
+      range.selectNodeContents(value);
+      const text = range.getBoundingClientRect();
+      const box = element.getBoundingClientRect();
+      return {
+        x: Math.abs(text.x + text.width / 2 - box.x - box.width / 2),
+        y: Math.abs(text.y + text.height / 2 - box.y - box.height / 2),
+      };
+    });
+    expect(offset.x).toBeLessThan(3);
+    expect(offset.y).toBeLessThan(3);
+  }
+  const orbit = page.getByTestId("orbital-motion");
+  const still = await orbit.getAttribute("style");
+  await page.waitForTimeout(350);
+  expect(await orbit.getAttribute("style")).toBe(still);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.reload();
+  await expect(page.locator("h1")).toBeVisible();
+  const moving = await orbit.getAttribute("style");
+  await expect.poll(() => orbit.getAttribute("style")).not.toBe(moving);
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: "test-results/animated-hero.png" });
 });

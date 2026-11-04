@@ -1,14 +1,22 @@
 "use client";
 import Link from "next/link";
+import type { ReactNode } from "react";
+import {
+  Magnetic,
+  PageEntrance,
+  ScrollProgress,
+  Reveal,
+} from "./motion-effects";
 import { usePathname } from "next/navigation";
 import { MotionConfig, motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { StarMark } from "./cosmos";
 
-export function SiteShell({ children }: { children: React.ReactNode }) {
+export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   return (
     <MotionConfig reducedMotion="user">
+      <ScrollProgress />
       <a
         href="#main"
         className="fixed left-4 top-4 z-50 -translate-y-24 rounded-lg bg-[#ddc5ee] p-3 text-black focus:translate-y-0"
@@ -16,7 +24,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
         Skip to content
       </a>
       <header className="relative z-20 border-b border-white/10 bg-[#08080e]/90">
-        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-10 lg:px-16">
+        <div className="mx-auto flex max-w-360 flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-10 lg:px-16">
           <Link
             href="/"
             className="flex items-center gap-3 text-[#eee5ee]"
@@ -53,19 +61,25 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
           </nav>
-          <Link
-            href="/#observatory"
-            className="hidden items-center gap-3 rounded-full border border-[#c5a6db]/30 px-5 py-2.5 text-xs text-[#e3ccef] transition-colors hover:bg-[#c5a6db]/10 md:flex"
-          >
-            Launch explorer <ArrowUpRight size={15} />
-          </Link>
+          <Magnetic className="hidden md:block">
+            <Link
+              href="/#observatory"
+              className="hidden items-center gap-3 rounded-full border border-[#c5a6db]/30 px-5 py-2.5 text-xs text-[#e3ccef] transition-colors hover:bg-[#c5a6db]/10 md:flex"
+            >
+              Launch explorer <ArrowUpRight size={15} />
+            </Link>
+          </Magnetic>
         </div>
       </header>
       <main id="main" className="min-w-0 flex-1">
-        {children}
+        <PageEntrance key={pathname}>{children}</PageEntrance>
       </main>
       <footer className="border-t border-white/10 bg-[#090910]">
-        <div className="mx-auto max-w-[1440px] px-5 py-12 sm:px-10 lg:px-16">
+        <Reveal
+          distance={20}
+          blur={0}
+          className="mx-auto max-w-360 px-5 py-12 sm:px-10 lg:px-16"
+        >
           <div className="flex flex-col justify-between gap-8 md:flex-row">
             <div>
               <Link
@@ -128,7 +142,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
               </span>
             </p>
           </div>
-        </div>
+        </Reveal>
       </footer>
     </MotionConfig>
   );

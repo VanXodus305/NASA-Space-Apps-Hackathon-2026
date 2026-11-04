@@ -25,9 +25,9 @@ No observations are fabricated when the backend is offline. The viewer displays 
 
 ## Stack and design
 
-Next.js 16 App Router, React 19, Tailwind CSS 4, HeroUI 3, Framer Motion, and React Bits Animated Content (GSAP). Styling uses Tailwind utilities and HeroUI; the global stylesheet contains only imports and font token declarations. Space Grotesk is self-hosted with its OFL license. Geist and Geist Mono use Next's Google font integration.
+Next.js 16 App Router, React 19, Tailwind CSS 4, HeroUI 3, Framer Motion, and React Bits Animated Content (GSAP) and Magnet. Styling uses Tailwind utilities and HeroUI; the global stylesheet contains only imports and font token declarations. Space Grotesk is self-hosted with its OFL license. Geist and Geist Mono use Next's Google font integration.
 
-Celestial black, indigo, lilac, and blush palette. Procedural SVG orbital artwork is decorative and never presented as telescope imagery. Reduced-motion preferences are respected. React Bits source and license are in `components/react-bits/`; adaptations move callback-ref updates into an effect and preserve readable server-rendered content before hydration.
+Celestial black, indigo, lilac, and blush palette. Procedural SVG orbital artwork is decorative and never presented as telescope imagery. Reduced-motion preferences are respected. React Bits source and license are in `components/react-bits/`; adaptations move ref updates into effects and preserve readable server-rendered content before hydration.
 
 ## Backend source review
 
@@ -73,7 +73,7 @@ The backend does not align observations to a common WCS, return FLAGS, or use a 
 
 ```bash
 npm run lint
-npx tsc --noEmit
+npm run typecheck
 npm test
 npm run build
 npx playwright install chromium
@@ -89,3 +89,11 @@ SPHEREx is a NASA-funded JPL / Caltech mission. Data: [IRSA](https://irsa.ipac.c
 ### Live archive check
 
 All five challenge fields were requested against the reviewed backend. The WISE 0855 request returned HTTP 502 (`IRSA search failed`); the four name-based targets returned HTTP 400 (`unknown name`). Direct diagnostics identified Sesame resolver timeouts and an unreachable IRSA SIA capabilities endpoint in this environment. Therefore, successful live image retrieval is not verified here. The backend's existing 11 tests passed; frontend contract and browser tests separately exercise successful responses using fixtures. No backend source was modified.
+
+## UI controls and motion
+
+Search fields use HeroUI TextField/Label/Input; detector, release, and playback speed use Select/ListBox with styled popovers. Field of view uses NumberField with increment/decrement controls and precision-aware steps; manually entered values are validated, not silently snapped. The observation timeline uses Slider, and the detector reference uses Table. Links retain Next.js navigation semantics.
+
+Framer Motion adds page entrances, a scroll-progress indicator, orbital accents, target filtering transitions, and pointer-driven card tilts. React Bits provides magnetic calls to action and scroll reveals across all three pages. Reduced-motion users receive static alternatives; touch input does not activate magnetic dragging or card tilt. The scientific frame images are not transformed.
+
+The obsolete root `types/` directory was removed: it contained generated validators with incorrect relative imports. `npm run typecheck` runs `next typegen` and then TypeScript; current validators are generated in `.next/types` and remain checked.

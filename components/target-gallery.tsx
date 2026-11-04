@@ -5,7 +5,7 @@ import { Button, Card } from "@heroui/react";
 import { ArrowUpRight, MoveUpRight, Sparkles, Telescope } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { targets, targetHref } from "@/lib/spherex";
-import AnimatedContent from "./react-bits/animated-content";
+import { InteractiveCard } from "./motion-effects";
 
 function TargetArt({ index, color }: { index: number; color: string }) {
   const reduced = useReducedMotion();
@@ -99,6 +99,7 @@ function TargetArt({ index, color }: { index: number; color: string }) {
   );
 }
 export function TargetGallery() {
+  const reduced = useReducedMotion();
   const [filter, setFilter] = useState("All targets");
   return (
     <>
@@ -121,54 +122,62 @@ export function TargetGallery() {
           FIELDS TO EXPLORE
         </span>
       </div>
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <motion.div layout className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {targets
           .filter((t) => filter === "All targets" || t.type === filter)
           .map((t) => (
-            <AnimatedContent key={t.name} distance={25} duration={0.6}>
-              <Card className="group h-full gap-0 overflow-hidden rounded-2xl border border-white/10 bg-[#101019] p-0 transition-colors hover:border-[#bea1d4]/40">
-                <div className="relative h-52 overflow-hidden border-b border-white/8 bg-[#0a0911]">
-                  <TargetArt index={Number(t.number) - 1} color={t.color} />
-                  <span className="absolute left-5 top-4 font-mono text-[10px] text-[#a08bb2]">
-                    FIELD / {t.number}
-                  </span>
-                  <span className="absolute right-5 top-4 flex items-center gap-1.5 rounded-full border border-white/10 bg-[#11101b] px-2 py-1 text-[9px] text-[#baacc8]">
-                    {t.type === "Motion" ? (
-                      <MoveUpRight size={10} />
-                    ) : (
-                      <Sparkles size={10} />
-                    )}{" "}
-                    {t.type}
-                  </span>
-                </div>
-                <Card.Content className="flex flex-1 flex-col p-6">
-                  <p className="font-mono text-[9px] tracking-widest text-[#ab8fbf]">
-                    {t.tag}
-                  </p>
-                  <h2 className="mt-3 font-display text-2xl tracking-tight">
-                    {t.name}
-                  </h2>
-                  <p className="mt-3 min-h-20 text-xs leading-6 text-[#a192af]">
-                    {t.description}
-                  </p>
-                  {t.name === "WISE 0855" && (
-                    <p className="mt-2 text-[10px] text-[#bba1cf]">
-                      Auto release enabled · falls back to QR2
+            <motion.div
+              layout
+              key={t.name}
+              initial={reduced ? false : { opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <InteractiveCard>
+                <Card className="group h-full gap-0 overflow-hidden rounded-2xl border border-white/10 bg-[#101019] p-0 transition-colors hover:border-[#bea1d4]/40">
+                  <div className="relative h-52 overflow-hidden border-b border-white/8 bg-[#0a0911]">
+                    <TargetArt index={Number(t.number) - 1} color={t.color} />
+                    <span className="absolute left-5 top-4 font-mono text-[10px] text-[#a08bb2]">
+                      FIELD / {t.number}
+                    </span>
+                    <span className="absolute right-5 top-4 flex items-center gap-1.5 rounded-full border border-white/10 bg-[#11101b] px-2 py-1 text-[9px] text-[#baacc8]">
+                      {t.type === "Motion" ? (
+                        <MoveUpRight size={10} />
+                      ) : (
+                        <Sparkles size={10} />
+                      )}{" "}
+                      {t.type}
+                    </span>
+                  </div>
+                  <Card.Content className="flex flex-1 flex-col p-6">
+                    <p className="font-mono text-[9px] tracking-widest text-[#ab8fbf]">
+                      {t.tag}
                     </p>
-                  )}
-                  <Link
-                    href={targetHref(t)}
-                    className="mt-6 flex items-center justify-between border-t border-white/10 pt-5 text-xs text-[#d2b8e4]"
-                  >
-                    Open in viewer{" "}
-                    <ArrowUpRight
-                      size={17}
-                      className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                    />
-                  </Link>
-                </Card.Content>
-              </Card>
-            </AnimatedContent>
+                    <h2 className="mt-3 font-display text-2xl tracking-tight">
+                      {t.name}
+                    </h2>
+                    <p className="mt-3 min-h-20 text-xs leading-6 text-[#a192af]">
+                      {t.description}
+                    </p>
+                    {t.name === "WISE 0855" && (
+                      <p className="mt-2 text-[10px] text-[#bba1cf]">
+                        Auto release enabled · falls back to QR2
+                      </p>
+                    )}
+                    <Link
+                      href={targetHref(t)}
+                      className="mt-6 flex items-center justify-between border-t border-white/10 pt-5 text-xs text-[#d2b8e4]"
+                    >
+                      Open in viewer{" "}
+                      <ArrowUpRight
+                        size={17}
+                        className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                      />
+                    </Link>
+                  </Card.Content>
+                </Card>
+              </InteractiveCard>
+            </motion.div>
           ))}
         {filter === "All targets" && (
           <div className="flex min-h-80 flex-col items-center justify-center rounded-2xl border border-dashed border-[#b598cb]/25 bg-[#14101b]/50 p-8 text-center">
@@ -190,7 +199,7 @@ export function TargetGallery() {
             </Link>
           </div>
         )}
-      </div>
+      </motion.div>
     </>
   );
 }

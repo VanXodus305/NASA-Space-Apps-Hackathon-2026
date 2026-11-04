@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Button, Input } from "@heroui/react";
+import { Button, Input, Form, Slider } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -38,10 +38,7 @@ import {
 } from "@/lib/spherex";
 import { StarMark } from "./cosmos";
 import AnimatedContent from "./react-bits/animated-content";
-
-const fieldClass =
-  "h-11 w-full rounded-xl border border-white/12 bg-[#0c0c17] px-3 text-sm text-[#e6ddec] outline-none transition focus:border-[#b796d2] focus:ring-2 focus:ring-[#b796d2]/20";
-const labelClass = "mb-2 block text-[11px] font-medium text-[#b1a5bd]";
+import { FieldOfView, SkySelect, SkyTextField } from "./sky-controls";
 
 export function Observatory() {
   const urlParams = useSearchParams();
@@ -58,6 +55,7 @@ export function Observatory() {
   const [shareState, setShareState] = useState("");
   const [shareUrl, setShareUrl] = useState("");
   const [fullscreen, setFullscreen] = useState(false);
+  const [fullscreenHost, setFullscreenHost] = useState<Element | null>(null);
   const controller = useRef<AbortController | null>(null);
   const player = useRef<HTMLDivElement>(null);
   const lastQuery = useRef<string | null>(null);
@@ -148,7 +146,10 @@ export function Observatory() {
     return () => clearInterval(timer);
   }, [playing, speed, frames.length, canPlay]);
   useEffect(() => {
-    const change = () => setFullscreen(Boolean(document.fullscreenElement));
+    const change = () => {
+      setFullscreen(Boolean(document.fullscreenElement));
+      setFullscreenHost(document.fullscreenElement);
+    };
     document.addEventListener("fullscreenchange", change);
     const visibility = () => {
       if (document.hidden) setPlaying(false);
@@ -215,53 +216,37 @@ export function Observatory() {
             <Crosshair size={17} className="text-[#c5a6db]" />
             <h3 className="font-display text-lg">Choose your coordinates</h3>
           </div>
-          <form
+          <Form
             onSubmit={(e) => {
               e.preventDefault();
               void runSearch(form);
             }}
           >
-            <label htmlFor="name" className={labelClass}>
-              OBJECT NAME
-            </label>
-            <Input
-              id="name"
-              placeholder="e.g. Barnard’s Star"
-              className={fieldClass}
+            <SkyTextField
+              label="OBJECT NAME"
               value={form.name}
-              onChange={(e) => set("name", e.target.value)}
+              onChange={(value) => set("name", value)}
+              placeholder="e.g. Barnard’s Star"
             />
             <div className="my-5 flex items-center gap-3 text-[10px] text-[#746a81]">
               <span className="h-px flex-1 bg-white/8" /> OR ENTER A POSITION{" "}
               <span className="h-px flex-1 bg-white/8" />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="ra" className={labelClass}>
-                  RIGHT ASCENSION
-                </label>
-                <Input
-                  id="ra"
-                  className={fieldClass}
-                  placeholder="133.795129"
-                  value={form.ra}
-                  onChange={(e) => set("ra", e.target.value)}
-                  aria-describedby="coordinate-help"
-                />
-              </div>
-              <div>
-                <label htmlFor="dec" className={labelClass}>
-                  DECLINATION
-                </label>
-                <Input
-                  id="dec"
-                  className={fieldClass}
-                  placeholder="−7.245147"
-                  value={form.dec}
-                  onChange={(e) => set("dec", e.target.value)}
-                  aria-describedby="coordinate-help"
-                />
-              </div>
+              <SkyTextField
+                label="RIGHT ASCENSION"
+                value={form.ra}
+                onChange={(value) => set("ra", value)}
+                placeholder="133.795129"
+                descriptionId="coordinate-help"
+              />
+              <SkyTextField
+                label="DECLINATION"
+                value={form.dec}
+                onChange={(value) => set("dec", value)}
+                placeholder="−7.245147"
+                descriptionId="coordinate-help"
+              />
             </div>
             <p
               id="coordinate-help"
@@ -271,59 +256,46 @@ export function Observatory() {
               over the name.
             </p>
             <div className="mt-5">
-              <label htmlFor="size" className={labelClass}>
-                FIELD OF VIEW{" "}
-                <span className="float-right font-normal text-[#80758f]">
-                  max 0.5°
-                </span>
-              </label>
-              <div className="relative">
-                <Input
-                  id="size"
-                  type="number"
-                  step="any"
-                  min="0.000001"
-                  max="0.5"
-                  value={form.size}
-                  onChange={(e) => set("size", e.target.value)}
-                  className={fieldClass}
-                />
-                <span className="pointer-events-none absolute right-8 top-3 text-xs text-[#8b8099]">
-                  degrees
-                </span>
-              </div>
+              <FieldOfView
+                value={form.size}
+                onChange={(value) => set("size", value)}
+              />
             </div>
             <div className="mt-5">
-              <label htmlFor="band" className={labelClass}>
-                DETECTOR / WAVELENGTH
-              </label>
-              <select
-                id="band"
-                className={fieldClass}
+              <SkySelect
+                label="DETECTOR / WAVELENGTH"
                 value={form.band}
-                onChange={(e) => set("band", e.target.value)}
-              >
-                {detectors.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.id} · {d.range} μm
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => set("band", value)}
+                options={detectors.map((d) => ({
+                  id: d.id,
+                  label: `${d.id} · ${d.range} μm`,
+                  description: `Spectral resolving power R = ${d.resolving}`,
+                }))}
+              />
             </div>
             <div className="mt-5">
-              <label htmlFor="release" className={labelClass}>
-                DATA RELEASE
-              </label>
-              <select
-                id="release"
-                className={fieldClass}
+              <SkySelect
+                label="DATA RELEASE"
                 value={form.release}
-                onChange={(e) => set("release", e.target.value)}
-              >
-                <option value="auto">Auto · QR3 → QR2</option>
-                <option value="qr3">QR3</option>
-                <option value="qr2">QR2</option>
-              </select>
+                onChange={(value) => set("release", value)}
+                options={[
+                  {
+                    id: "auto",
+                    label: "Auto · QR3 → QR2",
+                    description: "Use QR2 when QR3 has no coverage",
+                  },
+                  {
+                    id: "qr3",
+                    label: "QR3",
+                    description: "Quick Release 3 only",
+                  },
+                  {
+                    id: "qr2",
+                    label: "QR2",
+                    description: "Quick Release 2 only",
+                  },
+                ]}
+              />
             </div>
             <Button
               type="submit"
@@ -353,7 +325,7 @@ export function Observatory() {
                 <X size={14} /> Cancel search
               </Button>
             )}
-          </form>
+          </Form>
           <p className="mt-4 flex gap-2 text-[10px] leading-4 text-[#9689a5]">
             <Info size={12} className="mt-0.5 shrink-0" /> First searches can
             take 30–60 seconds or longer while images arrive from IRSA.
@@ -559,19 +531,24 @@ export function Observatory() {
                 <span>{frames[0]?.obs_iso.slice(0, 10) || "EARLIEST"}</span>
                 <span>{frames.at(-1)?.obs_iso.slice(0, 10) || "LATEST"}</span>
               </div>
-              <input
+              <Slider
                 aria-label="Observation timeline"
-                type="range"
-                min={0}
-                max={Math.max(0, frames.length - 1)}
+                minValue={0}
+                maxValue={Math.max(1, frames.length - 1)}
+                step={1}
                 value={index}
-                disabled={!canPlay}
-                onChange={(e) => {
-                  setIndex(Number(e.target.value));
+                isDisabled={!canPlay}
+                onChange={(value) => {
+                  setIndex(Array.isArray(value) ? value[0] : value);
                   setPlaying(false);
                 }}
-                className="block h-2 w-full cursor-pointer accent-[#c9a5e0] disabled:cursor-default disabled:opacity-30"
-              />
+                className="w-full gap-0 data-disabled:opacity-35"
+              >
+                <Slider.Track className="h-2 rounded-full bg-[#30253b]">
+                  <Slider.Fill className="bg-linear-to-r from-[#8461a5] to-[#dcbaee]" />
+                  <Slider.Thumb className="size-4 border-2 border-[#ead8f4] bg-[#c29fd8] shadow-[0_0_15px_#c29fd850]" />
+                </Slider.Track>
+              </Slider>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-1">
                   <Button
@@ -603,18 +580,17 @@ export function Observatory() {
                   >
                     <SkipForward size={16} />
                   </Button>
-                  <select
-                    aria-label="Playback speed"
-                    value={speed}
-                    onChange={(e) => setSpeed(Number(e.target.value))}
-                    className="ml-2 h-9 rounded-lg border border-white/10 bg-[#15111f] px-2 font-mono text-[10px] text-[#baacc7]"
-                  >
-                    {[0.5, 1, 2, 4].map((s) => (
-                      <option value={s} key={s}>
-                        {s}× speed
-                      </option>
-                    ))}
-                  </select>
+                  <SkySelect
+                    label="Playback speed"
+                    compact
+                    value={String(speed)}
+                    onChange={(value) => setSpeed(Number(value))}
+                    options={[0.5, 1, 2, 4].map((s) => ({
+                      id: String(s),
+                      label: `${s}× speed`,
+                    }))}
+                    portalContainer={fullscreenHost}
+                  />
                 </div>
                 <div className="text-right">
                   <p className="font-mono text-[10px] text-[#cfbfdc]">
