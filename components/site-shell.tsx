@@ -1,17 +1,24 @@
 'use client'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { useEffect, useState, type ReactNode } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+} from 'react'
 import {
   Magnetic,
   PageEntrance,
   ScrollProgress,
   Reveal,
 } from './motion-effects'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { MotionConfig, motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { StarMark } from './cosmos'
+import GooeyNav, { type GooeyNavItem } from './react-bits/gooey-nav'
 
 // WebGL is client-only and loaded after first paint so it never blocks load.
 const Strands = dynamic(() => import('./react-bits/strands'), { ssr: false })
@@ -28,6 +35,12 @@ const STRAND_COLORS = [
   '#93b5ff',
   '#5a5fd8',
   '#2a2b86',
+]
+
+const NAV_ITEMS: GooeyNavItem[] = [
+  { label: 'Home', href: '/' },
+  { label: 'Targets', href: '/targets' },
+  { label: 'About', href: '/about' },
 ]
 
 function SkyBackdrop() {
@@ -111,6 +124,71 @@ function SplashLayer() {
   )
 }
 
+// GooeyNav renders plain <a href> links, so this wrapper turns their clicks
+// into client-side router pushes (same behaviour as <Link>), and drives the
+// active pill from the current route.
+function HeaderNav() {
+  const pathname = usePathname()
+  const router = useRouter()
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  const matched = NAV_ITEMS.findIndex(({ href }) =>
+    href === '/'
+      ? pathname === '/'
+      : pathname === href || pathname?.startsWith(`${href}/`),
+  )
+  const routeIndex = Math.max(0, matched)
+
+  // Optimistic index so the gooey animation starts on click instead of
+  // waiting for the route to commit. Cleared whenever the pathname changes.
+  const [seenPath, setSeenPath] = useState(pathname)
+  const [pending, setPending] = useState<number | null>(null)
+  if (seenPath !== pathname) {
+    setSeenPath(pathname)
+    setPending(null)
+  }
+  const activeIndex = pending ?? routeIndex
+
+  // GooeyNav renders its own <nav>; keep the landmark label the old nav had.
+  useEffect(() => {
+    wrapperRef.current
+      ?.querySelector('nav')
+      ?.setAttribute('aria-label', 'Main navigation')
+  }, [])
+
+  const handleClick = (event: MouseEvent<HTMLDivElement>) => {
+    const anchor = (event.target as Element).closest('a')
+    if (
+      !anchor ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return
+    event.preventDefault()
+    router.push(anchor.getAttribute('href') ?? '/')
+  }
+
+  return (
+    <div
+      ref={wrapperRef}
+      onClick={handleClick}
+      className="order-last flex w-full justify-center sm:order-none sm:w-auto"
+    >
+      <GooeyNav
+        items={NAV_ITEMS}
+        activeIndex={activeIndex}
+        onChange={(index) => setPending(index)}
+        theme="dark"
+        color="#cfb0e0"
+        size="md"
+      />
+    </div>
+  )
+}
+
 export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   return (
@@ -124,8 +202,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <header className="relative z-20 border-b border-white/10">
-        <div className="mx-auto flex max-w-360 items-center justify-between gap-4 px-5 py-4 sm:px-10 sm:py-5 lg:px-16">
+      <header className="relative z-20 overflow-x-clip border-b border-white/10">
+        <div className="mx-auto flex max-w-360 flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-4 sm:flex-nowrap sm:px-10 sm:py-5 lg:px-16">
           <Link
             href="/"
             className="flex items-center gap-2.5 text-ink sm:gap-3"
@@ -137,31 +215,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
               <span className="ml-2 font-normal text-ink-dim">blink</span>
             </span>
           </Link>
-          <nav
-            aria-label="Main navigation"
-            className="flex items-center gap-0 sm:gap-4"
-          >
-            {[
-              ['/', 'Home'],
-              ['/targets', 'Targets'],
-              ['/about', 'About'],
-            ].map(([href, label]) => (
-              <Link
-                key={href}
-                href={href}
-                aria-current={pathname === href ? 'page' : undefined}
-                className={`relative px-2 py-2 text-sm transition-colors hover:text-ink sm:px-3 ${pathname === href ? 'text-ink' : 'text-ink-dim'}`}
-              >
-                {label}
-                {pathname === href && (
-                  <motion.span
-                    layoutId="navigation"
-                    className="absolute -bottom-1 left-2 right-2 h-px bg-lilac sm:left-3 sm:right-3"
-                  />
-                )}
-              </Link>
-            ))}
-          </nav>
+          <HeaderNav />
           <Magnetic className="hidden md:block">
             <Link
               href="/#observatory"

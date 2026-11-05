@@ -1,9 +1,12 @@
 'use client'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-import { Magnetic, Reveal, KineticHeading } from './motion-effects'
+import { Magnetic, Reveal } from './motion-effects'
 import { ArrowDown, ArrowUpRight, Orbit } from 'lucide-react'
 import AnimatedContent from './react-bits/animated-content'
+import ParticleText, {
+  type ParticleTextProps,
+} from './react-bits/particle-text'
 
 /* ------------------------------------------------------------------ */
 /* Asteroid 1999 RQ36: a dependency-free GLB + WebGL2 viewer.          */
@@ -604,6 +607,31 @@ const STATS = [
 
 const labelClass = 'font-mono text-[10px] tracking-[.14em] sm:text-[11px]'
 
+// React Bits ParticleText configuration, as provided. Only `fontSize` differs:
+// '1em' inherits the heading's responsive size set on the <h1> below.
+const HEADING_PARTICLES: ParticleTextProps = {
+  particleSize: 2.2,
+  density: 4,
+  color: 'currentColor',
+  highlightColor: '#ff5a36',
+  highlightMode: 'motion',
+  shape: 'circle',
+  intro: 'gather',
+  scatter: 190,
+  gatherDuration: 1600,
+  stagger: 420,
+  clickBurst: true,
+  burstStrength: 1,
+  pointerRepel: 42,
+  repelRadius: 120,
+  idleDrift: 0.8,
+  trigger: 'mount',
+  fontSize: '1em',
+  fontWeight: 800,
+  fontFamily: 'inherit',
+  glow: true,
+}
+
 export function HomeHero() {
   return (
     <>
@@ -678,11 +706,49 @@ export function HomeHero() {
                   />
                   YOUR WINDOW INTO THE INFRARED UNIVERSE
                 </div>
-                <KineticHeading
-                  lines={['The sky is', 'never still.']}
-                  accentWord="still."
-                  className="max-w-3xl font-display text-[clamp(3rem,12.5vw,4.5rem)] font-light sm:text-[clamp(3.5rem,9vw,5.5rem)] lg:text-[clamp(2.75rem,6.4vw,6.25rem)] leading-[.95] tracking-[-.05em] lg:[&>span:last-child]:pl-[.7em]"
-                />
+                {/*
+                  ParticleText draws one centred line per instance, so the
+                  two-line heading is two instances. Each box is 1.7em tall
+                  (room for the intro scatter), the second box overlaps the
+                  first by .85em, and the h1's -my-[.3em] trims the empty
+                  padding so the heading keeps its original vertical rhythm.
+                  Box widths are in em (≈ text width / .92) so the text sits
+                  flush-left; nudge 5.5em / 5.8em / -.27em if you change font.
+                */}
+                <h1
+                  aria-label="The sky is never still."
+                  className="-my-[.3em] max-w-3xl font-display text-[clamp(2.5rem,11.5vw,4.5rem)] sm:text-[clamp(3.5rem,9vw,5.5rem)] lg:text-[clamp(2.75rem,6.4vw,6.25rem)]"
+                >
+                  <span aria-hidden="true" className="block">
+                    <ParticleText
+                      {...HEADING_PARTICLES}
+                      text="The sky is"
+                      style={{
+                        width: '5.5em',
+                        maxWidth: '100%',
+                        height: '1.7em',
+                        minHeight: 0,
+                        marginLeft: '-.27em',
+                      }}
+                    />
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="-mt-[.85em] block lg:pl-[.7em]"
+                  >
+                    <ParticleText
+                      {...HEADING_PARTICLES}
+                      text="never still."
+                      style={{
+                        width: '5.8em',
+                        maxWidth: '100%',
+                        height: '1.7em',
+                        minHeight: 0,
+                        marginLeft: '-.27em',
+                      }}
+                    />
+                  </span>
+                </h1>
 
                 <p className="mt-9 max-w-md border-l border-lilac/50 pl-5 text-base leading-7 text-ink-dim">
                   A billion objects. A universe of possibilities.
