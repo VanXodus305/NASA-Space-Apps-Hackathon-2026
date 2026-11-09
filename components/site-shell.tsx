@@ -273,12 +273,12 @@ export function SiteShell({ children }: { children: ReactNode }) {
                 IRSA data ↗
               </a>
               <a
-                href="https://aladin.cds.unistra.fr/AladinLite/"
+                href="https://www.legacysurvey.org/viewer/"
                 target="_blank"
                 rel="noreferrer"
                 className="hover:text-white"
               >
-                Aladin Lite · CDS ↗
+                Legacy Survey ↗
               </a>
             </div>
           </div>

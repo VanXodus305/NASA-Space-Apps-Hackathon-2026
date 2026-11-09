@@ -63,7 +63,7 @@ The frontend validates the response, sorts by MJD, limits display to eight frame
 
 Shared URLs accept `ra`, `dec`, `name`, `size` (or legacy `fov`), `band`, and `release`. They hydrate the form and automatically search. WISE 0855 uses the challenge's exact coordinates and Auto release. Other presets use the backend-recommended object names.
 
-Aladin Lite is embedded from CDS using the **returned** coordinates and field of view. It shows the DSS2 reference survey, not SPHEREx. Its external services and WebGL must be available. An external-map link is provided beside it.
+The sky-context panel uses a Legacy Survey DR10 cutout generated from the **returned** coordinates and field of view. It is an optical reference image, not SPHEREx. The panel links to the corresponding interactive Legacy Survey viewer and provides an image retry state.
 
 ### Scientific limits
 
@@ -84,7 +84,7 @@ Playwright starts an isolated production server on port 3100 (keep this port fre
 
 ## Credits
 
-SPHEREx is a NASA-funded JPL / Caltech mission. Data: [IRSA](https://irsa.ipac.caltech.edu/Missions/spherex.html). Releases: [QR2 DOI](https://doi.org/10.26131/IRSA652), [QR3 DOI](https://doi.org/10.26131/IRSA662). Atlas: [Aladin Lite / CDS](https://aladin.cds.unistra.fr/AladinLite/). Animation: [React Bits](https://reactbits.dev/animations/animated-content). This is an independent community project, not an official NASA application.
+SPHEREx is a NASA-funded JPL / Caltech mission. Data: [IRSA](https://irsa.ipac.caltech.edu/Missions/spherex.html). Releases: [QR2 DOI](https://doi.org/10.26131/IRSA652), [QR3 DOI](https://doi.org/10.26131/IRSA662). Sky context: [Legacy Survey Viewer](https://www.legacysurvey.org/viewer/). Animation: [React Bits](https://reactbits.dev/animations/animated-content). This is an independent community project, not an official NASA application.
 
 ### Live archive check
 

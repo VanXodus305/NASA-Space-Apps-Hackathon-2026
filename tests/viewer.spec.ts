@@ -22,10 +22,13 @@ async function mock(
   body: unknown = payload,
   status = 200,
 ) {
-  await page.route("https://aladin.cds.unistra.fr/**", (route) =>
+  await page.route("**/viewer/jpeg-cutout?*", (route) =>
     route.fulfill({
-      body: "<html><body>Sky map fixture</body></html>",
-      contentType: "text/html",
+      contentType: "image/png",
+      body: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
+        "base64",
+      ),
     }),
   );
   await page.route("**/api/frames?*", (route) =>
@@ -107,7 +110,7 @@ test("shared WISE search omits release, sorts epochs, plays, pauses, scrubs, and
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
     "release=auto",
   );
-  await expect(page.locator("iframe")).toHaveAttribute("src", /133.795129/);
+  await expect(page.getByTestId("sky-context-map")).toBeVisible();
 });
 test("coordinate precedence and colon normalization", async ({ page }) => {
   await mock(page);

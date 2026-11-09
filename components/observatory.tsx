@@ -39,6 +39,7 @@ import {
 import { StarMark } from './cosmos'
 import AnimatedContent from './react-bits/animated-content'
 import { FieldOfView, SkySelect, SkyTextField } from './sky-controls'
+import { SkyContextMap } from './aladin-map'
 
 export function Observatory() {
   const urlParams = useSearchParams()
@@ -186,7 +187,7 @@ export function Observatory() {
     }
   }
   const mapUrl = result
-    ? `https://aladin.cds.unistra.fr/AladinLite/?target=${encodeURIComponent(`${result.query.ra} ${result.query.dec}`)}&fov=${result.query.size_deg}&survey=P%2FDSS2%2Fcolor`
+    ? `https://www.legacysurvey.org/viewer/?ra=${result.query.ra}&dec=${result.query.dec}&layer=ls-dr10&zoom=14`
     : ''
   return (
     <section
@@ -694,27 +695,26 @@ export function Observatory() {
             <div className="overflow-hidden rounded-xl border border-white/10 bg-panel">
               <div className="flex items-center justify-between px-4 py-3 text-[11px] text-lilac">
                 <span className="flex items-center gap-2">
-                  <Crosshair size={12} /> SKY CONTEXT · DSS2
+                  <Crosshair size={12} /> SKY CONTEXT · OPTICAL
                 </span>
                 {result && (
                   <a
                     href={mapUrl}
                     target="_blank"
                     rel="noreferrer"
-                    aria-label="Open sky map in Aladin Lite"
+                    aria-label="Open interactive sky viewer"
                   >
                     <ArrowUpRight size={13} />
                   </a>
                 )}
               </div>
               {result ? (
-                <iframe
-                  key={mapUrl}
-                  src={mapUrl}
-                  title="Aladin Lite sky map centered on the returned coordinates"
-                  loading="lazy"
-                  className="h-48 w-full border-0"
-                  allowFullScreen
+                <SkyContextMap
+                  key={`${result.query.ra}-${result.query.dec}-${result.query.size_deg}`}
+                  ra={result.query.ra}
+                  dec={result.query.dec}
+                  fov={result.query.size_deg}
+                  viewerUrl={mapUrl}
                 />
               ) : (
                 <div className="flex h-32 items-center justify-center gap-2 border-t border-white/5 font-mono text-[11px] text-ink-faint">
@@ -723,7 +723,7 @@ export function Observatory() {
                 </div>
               )}
               <p className="px-4 py-2 text-[11px] text-ink-faint">
-                Aladin Lite / CDS · reference survey, not SPHEREx
+                Legacy Survey / NOIRLab · reference survey, not SPHEREx
               </p>
             </div>
           </div>
