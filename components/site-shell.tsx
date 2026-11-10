@@ -95,12 +95,22 @@ function SkyBackdrop() {
 // Skipped entirely when the user prefers reduced motion.
 function SplashLayer() {
   const [enabled, setEnabled] = useState(false)
+  const [lite, setLite] = useState(false)
   useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const update = () => setEnabled(!query.matches)
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
+    // Phones and touch devices run the fluid sim at its lightest preset.
+    const touch = window.matchMedia('(max-width: 767px), (pointer: coarse)')
+    const update = () => {
+      setEnabled(!reduce.matches)
+      setLite(touch.matches)
+    }
     update()
-    query.addEventListener('change', update)
-    return () => query.removeEventListener('change', update)
+    reduce.addEventListener('change', update)
+    touch.addEventListener('change', update)
+    return () => {
+      reduce.removeEventListener('change', update)
+      touch.removeEventListener('change', update)
+    }
   }, [])
   if (!enabled) return null
   return (
@@ -116,7 +126,7 @@ function SplashLayer() {
       momentum={1}
       shading={1}
       glow={0}
-      quality="high"
+      quality={lite ? 'low' : 'high'}
       intro
       contained={false}
       zIndex={5}

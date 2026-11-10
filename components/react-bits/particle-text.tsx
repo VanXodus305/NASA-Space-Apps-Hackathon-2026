@@ -57,6 +57,8 @@ type Particle = {
   swirl: number
 }
 
+// Phones and touch devices render the text once, static (no intro, drift, repel or burst).
+const STATIC_QUERY = '(max-width: 767px), (pointer: coarse)'
 const INHERIT = /^(currentcolor|inherit)$/i
 const TONES = 12
 const FADES = 8
@@ -187,7 +189,9 @@ const ParticleText = ({
       return undefined
 
     const motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)')
-    let reducedMotion = !!motionQuery?.matches
+    const staticQuery = window.matchMedia?.(STATIC_QUERY)
+    const isStill = () => !!motionQuery?.matches || !!staticQuery?.matches
+    let reducedMotion = isStill()
     let particles: Particle[] = []
     let raf = 0
     let sampleFrame = 0
@@ -891,8 +895,8 @@ const ParticleText = ({
       if (settingsRef.current?.trigger === 'click') startIntro(false)
     }
 
-    const handleReduceMotionChange = (event: MediaQueryListEvent) => {
-      reducedMotion = event.matches
+    const handleReduceMotionChange = () => {
+      reducedMotion = isStill()
       if (reducedMotion) {
         gathering = false
         bursting = false
@@ -909,6 +913,7 @@ const ParticleText = ({
     }
 
     motionQuery?.addEventListener?.('change', handleReduceMotionChange)
+    staticQuery?.addEventListener?.('change', handleReduceMotionChange)
     canvas.addEventListener('pointerenter', handlePointerEnter)
     canvas.addEventListener('pointermove', handlePointerMove)
     canvas.addEventListener('pointerleave', handlePointerLeave)
@@ -948,6 +953,7 @@ const ParticleText = ({
       themeObserver.disconnect()
       schemeQuery?.removeEventListener?.('change', wake)
       motionQuery?.removeEventListener?.('change', handleReduceMotionChange)
+      staticQuery?.removeEventListener?.('change', handleReduceMotionChange)
       canvas.removeEventListener('pointerenter', handlePointerEnter)
       canvas.removeEventListener('pointermove', handlePointerMove)
       canvas.removeEventListener('pointerleave', handlePointerLeave)

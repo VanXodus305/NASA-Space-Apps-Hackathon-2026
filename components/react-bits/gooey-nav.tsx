@@ -13,6 +13,11 @@ import {
 const useIsomorphicLayoutEffect =
   typeof window === 'undefined' ? useEffect : useLayoutEffect
 
+// Phones and touch devices get a static pill: no WebGL, no gooey animation.
+const STATIC_QUERY = '(max-width: 767px), (pointer: coarse)'
+const prefersStatic = () =>
+  typeof window !== 'undefined' && window.matchMedia(STATIC_QUERY).matches
+
 type Palette = 'dark' | 'light'
 type Size = 'sm' | 'md' | 'lg'
 type Rgba = number[]
@@ -378,6 +383,7 @@ const GooeyNav = ({
   style,
 }: GooeyNavProps) => {
   const [innerIndex, setInnerIndex] = useState(initialActiveIndex)
+  const [staticMode, setStaticMode] = useState(prefersStatic)
   const current = Math.min(
     Math.max(0, activeIndex ?? innerIndex),
     Math.max(0, items.length - 1),
@@ -429,11 +435,13 @@ const GooeyNav = ({
     const reduced = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     ).matches
-    const gl = canvas.getContext('webgl2', {
-      alpha: true,
-      premultipliedAlpha: true,
-      antialias: false,
-    })
+    const gl = staticMode
+      ? null
+      : canvas.getContext('webgl2', {
+          alpha: true,
+          premultipliedAlpha: true,
+          antialias: false,
+        })
     const pipeline = gl ? build(gl) : null
     fallback.style.display = pipeline ? 'none' : 'block'
     canvas.style.display = pipeline ? 'block' : 'none'
@@ -457,19 +465,21 @@ const GooeyNav = ({
       const ratio = Math.min(window.devicePixelRatio || 1, 2)
       view.width = box.width
       view.height = box.height
-      const outerWidth = box.width + MARGIN * 2
-      const outerHeight = box.height + MARGIN * 2
-      Object.assign(canvas.style, {
-        left: `${-MARGIN}px`,
-        top: `${-MARGIN}px`,
-        width: `${outerWidth}px`,
-        height: `${outerHeight}px`,
-      })
-      const width = Math.max(1, Math.round(outerWidth * ratio))
-      const height = Math.max(1, Math.round(outerHeight * ratio))
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width
-        canvas.height = height
+      if (pipeline) {
+        const outerWidth = box.width + MARGIN * 2
+        const outerHeight = box.height + MARGIN * 2
+        Object.assign(canvas.style, {
+          left: `${-MARGIN}px`,
+          top: `${-MARGIN}px`,
+          width: `${outerWidth}px`,
+          height: `${outerHeight}px`,
+        })
+        const width = Math.max(1, Math.round(outerWidth * ratio))
+        const height = Math.max(1, Math.round(outerHeight * ratio))
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width
+          canvas.height = height
+        }
       }
       rects = Array.from(list.children).map((item) => {
         const rect = item.getBoundingClientRect()
@@ -894,7 +904,7 @@ const GooeyNav = ({
 
     const go = (index: number, animate: boolean) => {
       if (index === target) return
-      if (!rects[index] || !animate || reduced || target < 0) {
+      if (!rects[index] || !animate || reduced || staticMode || target < 0) {
         settle(index)
         return
       }
@@ -948,8 +958,10 @@ const GooeyNav = ({
     resizeObserver.observe(stage)
     resizeObserver.observe(list)
 
-    list.addEventListener('pointerover', onOver)
-    list.addEventListener('pointerleave', onLeave)
+    if (!staticMode) {
+      list.addEventListener('pointerover', onOver)
+      list.addEventListener('pointerleave', onLeave)
+    }
 
     measure()
     settle(indexRef.current)
@@ -963,7 +975,7 @@ const GooeyNav = ({
       go: (index) => go(index, true),
       refresh: () => {
         render()
-        wake()
+        if (!staticMode) wake()
       },
     }
 
@@ -979,7 +991,15 @@ const GooeyNav = ({
       }
       engineRef.current = null
     }
-  }, [items.length])
+  }, [items.length, staticMode])
+
+  useEffect(() => {
+    const query = window.matchMedia(STATIC_QUERY)
+    const update = () => setStaticMode(query.matches)
+    update()
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
 
   useEffect(() => {
     engineRef.current?.go(current)
