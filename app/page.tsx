@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { HomeHero } from '@/components/home-hero'
 import { Observatory } from '@/components/observatory'
+import { AstroBot } from '@/components/astro-bot'
 export default function Home() {
   return (
     <>
@@ -13,6 +14,9 @@ export default function Home() {
         }
       >
         <Observatory />
+      </Suspense>
+      <Suspense fallback={null}>
+        <AstroBot />
       </Suspense>
     </>
   )
