@@ -115,7 +115,9 @@ test("shared WISE search omits release, sorts epochs, plays, pauses, scrubs, and
 test("coordinate precedence and colon normalization", async ({ page }) => {
   await mock(page);
   await page.goto("/");
-  await page.getByLabel("OBJECT NAME", { exact: true }).fill("ignored");
+  await page
+    .getByRole("combobox", { name: "OBJECT NAME / TARGET", exact: true })
+    .fill("ignored");
   await page
     .getByLabel("RIGHT ASCENSION", { exact: true })
     .fill("08:55:10.831");
@@ -128,6 +130,36 @@ test("coordinate precedence and colon normalization", async ({ page }) => {
   expect(url.searchParams.get("ra")).toBe("08h55m10.831s");
   expect(url.searchParams.has("name")).toBe(false);
   expect(url.searchParams.get("release")).toBe("qr3");
+});
+
+test("target autocomplete fills the selected target's coordinates", async ({
+  page,
+}) => {
+  await mock(page);
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: /select or search a target/i })
+    .click();
+  await page
+    .getByRole("searchbox", { name: /search targets/i })
+    .fill("Barnard");
+  await expect(
+    page.getByRole("option", { name: /Barnard’s Star/ }),
+  ).toBeVisible();
+  await page.getByRole("option", { name: /Barnard’s Star/ }).click();
+  await expect(page.getByLabel("RIGHT ASCENSION", { exact: true })).toHaveValue(
+    "269.452077",
+  );
+  await expect(page.getByLabel("DECLINATION", { exact: true })).toHaveValue(
+    "4.693365",
+  );
+  const request = page.waitForRequest((request) =>
+    request.url().includes("/api/frames?"),
+  );
+  await page.getByRole("button", { name: "Search the sky" }).click();
+  const params = new URL((await request).url()).searchParams;
+  expect(params.get("ra")).toBe("269.452077");
+  expect(params.get("dec")).toBe("4.693365");
 });
 test("empty, 400, 502 and image failures have actionable states", async ({
   page,

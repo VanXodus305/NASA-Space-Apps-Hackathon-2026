@@ -1,11 +1,12 @@
-import type { Metadata } from 'next'
-import { TargetGallery } from '@/components/target-gallery'
+import type { Metadata } from "next";
+import { TargetGallery } from "@/components/target-gallery";
 import {
   Reveal,
   OrbitalAccent,
   KineticHeading,
-} from '@/components/motion-effects'
-export const metadata: Metadata = { title: 'Targets' }
+} from "@/components/motion-effects";
+import { targets } from "@/lib/spherex";
+export const metadata: Metadata = { title: "Targets" };
 export default function Targets() {
   return (
     <div className="mx-auto max-w-360 px-5 pb-20 pt-16 sm:px-10 lg:px-16">
@@ -14,17 +15,18 @@ export default function Targets() {
         className="relative mb-14 border-b border-white/10 pb-12"
       >
         <p className="mb-6 font-mono text-[11px] tracking-[.14em] text-lilac">
-          THE COSMIC SHORTLIST / 05 DESTINATIONS
+          THE COSMIC SHORTLIST / {String(targets.length).padStart(2, "0")}{" "}
+          DESTINATIONS
         </p>
         <KineticHeading
-          lines={['Small lights.', 'Big discoveries.']}
+          lines={["Small lights.", "Big discoveries."]}
           accentWord="discoveries."
           className="font-display text-5xl font-medium leading-[1.05] tracking-[-.06em] sm:text-7xl"
         />
 
         <p className="mt-6 max-w-lg text-sm leading-7 text-ink-dim">
-          Every explorer needs a starting point. These five fields are your
-          invitation to watch the universe move, flicker, and surprise you.
+          Start with the five challenge fields, then keep exploring. Every
+          coordinate below is ready to open in the blink viewer.
         </p>
         <OrbitalAccent />
       </Reveal>
@@ -35,5 +37,5 @@ export default function Targets() {
         SPHEREx observations.
       </p>
     </div>
-  )
+  );
 }

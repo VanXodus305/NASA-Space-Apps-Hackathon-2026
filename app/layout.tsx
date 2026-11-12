@@ -20,7 +20,7 @@ const display = Sora({
 })
 export const metadata: Metadata = {
   title: {
-    default: 'SPHEREx Blink — Watch the universe move',
+    default: 'SPHEREx Blink - Watch the universe move',
     template: '%s · SPHEREx Blink',
   },
   description:
@@ -34,6 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${body.variable} ${mono.variable} ${display.variable} dark scroll-smooth antialiased motion-reduce:scroll-auto`}
     >
       <body className="flex min-h-screen flex-col bg-[#08080e] font-sans text-[#eee7f0] selection:bg-[#aa87c8] selection:text-black">

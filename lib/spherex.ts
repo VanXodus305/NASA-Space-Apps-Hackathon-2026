@@ -48,7 +48,7 @@ export const targets = [
     type: "Motion",
     description:
       "A stellar neighbor on the move. Watch one of the sky’s fastest-moving stars drift against the distant background.",
-    search: { name: "Barnard's Star" },
+    search: { ra: "269.452077", dec: "4.693365" },
     color: "#d0b5ed",
     number: "01",
   },
@@ -68,7 +68,7 @@ export const targets = [
     type: "Motion",
     description:
       "Two faint brown dwarfs orbit a bright star. Explore the field and look for their shared motion.",
-    search: { name: "eps Ind B" },
+    search: { ra: "331.043850", dec: "-56.782528" },
     color: "#ddb8ac",
     number: "03",
   },
@@ -78,7 +78,7 @@ export const targets = [
     type: "Brightness",
     description:
       "Same place, different light. Compare epochs to look for changes in this young star’s brightness.",
-    search: { name: "RW Aur" },
+    search: { ra: "76.956542", dec: "30.401417" },
     color: "#beafd9",
     number: "04",
   },
@@ -88,11 +88,89 @@ export const targets = [
     type: "Brightness",
     description:
       "A star with a changing glow. Slow the player down and watch its brightness relative to nearby stars.",
-    search: { name: "R Dra" },
+    search: { ra: "248.163458", dec: "66.762611" },
     color: "#c9a4bd",
     number: "05",
   },
+  {
+    name: "Proxima Centauri",
+    tag: "NEARBY RED DWARF",
+    type: "Motion",
+    description:
+      "Our closest stellar neighbor. Follow its proper motion against the much more distant stellar backdrop.",
+    search: { ra: "217.429000", dec: "-62.679484" },
+    color: "#e3a78d",
+    number: "06",
+  },
+  {
+    name: "Luhman 16 AB",
+    tag: "NEARBY BROWN-DWARF PAIR",
+    type: "Motion",
+    description:
+      "A remarkably nearby pair of brown dwarfs. Look for their shared drift through a crowded southern field.",
+    search: { ra: "162.314875", dec: "-53.318361" },
+    color: "#9eb9da",
+    number: "07",
+  },
+  {
+    name: "Mira",
+    tag: "LONG-PERIOD VARIABLE",
+    type: "Brightness",
+    description:
+      "A pulsating red giant with a dramatic light cycle. Compare epochs for a changing infrared glow.",
+    search: { ra: "34.836625", dec: "-2.977639" },
+    color: "#e6a4a7",
+    number: "08",
+  },
+  {
+    name: "Delta Cephei",
+    tag: "CEPHEID VARIABLE",
+    type: "Brightness",
+    description:
+      "The prototype Cepheid variable. Watch a steady celestial heartbeat change its apparent brightness.",
+    search: { ra: "337.292792", dec: "58.415194" },
+    color: "#f1cb8a",
+    number: "09",
+  },
+  {
+    name: "Betelgeuse",
+    tag: "VARIABLE SUPERGIANT",
+    type: "Brightness",
+    description:
+      "A luminous red supergiant whose changing light makes a familiar constellation feel newly alive.",
+    search: { ra: "88.792939", dec: "7.407064" },
+    color: "#eb987d",
+    number: "10",
+  },
+  {
+    name: "Sirius",
+    tag: "BRIGHT NEARBY STAR",
+    type: "Motion",
+    description:
+      "A bright nearby benchmark with measurable motion—ideal for learning how a stable field is framed.",
+    search: { ra: "101.287155", dec: "-16.716116" },
+    color: "#b7d5f2",
+    number: "11",
+  },
+  {
+    name: "Vega",
+    tag: "BRIGHT REFERENCE STAR",
+    type: "Motion",
+    description:
+      "A bright northern reference star. Use it to compare detector bands and establish your visual baseline.",
+    search: { ra: "279.234733", dec: "38.783689" },
+    color: "#d8d7ff",
+    number: "12",
+  },
 ] as const;
+/** Coordinate-backed entries offered by the home-page target search. */
+export const searchableTargets = targets.map((target) => ({
+  id: target.number,
+  name: target.name,
+  tag: target.tag,
+  ra: target.search.ra,
+  dec: target.search.dec,
+}));
 export function targetHref(target: (typeof targets)[number]) {
   return (
     "/?" +

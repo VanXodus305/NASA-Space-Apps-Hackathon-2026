@@ -46,16 +46,24 @@ Reviewed the complete source, tests, README, demo script, environment example, a
 
 ```json
 {
-  "query": { "ra": 133.795129, "dec": -7.245147, "size_deg": 0.1, "band": "D2", "release": "qr2" },
+  "query": {
+    "ra": 133.795129,
+    "dec": -7.245147,
+    "size_deg": 0.1,
+    "band": "D2",
+    "release": "qr2"
+  },
   "dropped": 0,
-  "frames": [{
-    "id": "0000000000000001",
-    "obs_mjd": 60829.12,
-    "obs_iso": "2025-06-03T02:52:48Z",
-    "detector": "D2",
-    "wavelength_um": [1.1, 1.62],
-    "image_url": "/frames/0000000000000001.png"
-  }]
+  "frames": [
+    {
+      "id": "0000000000000001",
+      "obs_mjd": 60829.12,
+      "obs_iso": "2025-06-03T02:52:48Z",
+      "detector": "D2",
+      "wavelength_um": [1.1, 1.62],
+      "image_url": "/frames/0000000000000001.png"
+    }
+  ]
 }
 ```
 
@@ -63,7 +71,7 @@ The frontend validates the response, sorts by MJD, limits display to eight frame
 
 Shared URLs accept `ra`, `dec`, `name`, `size` (or legacy `fov`), `band`, and `release`. They hydrate the form and automatically search. WISE 0855 uses the challenge's exact coordinates and Auto release. Other presets use the backend-recommended object names.
 
-The sky-context panel uses a Legacy Survey DR10 cutout generated from the **returned** coordinates and field of view. It is an optical reference image, not SPHEREx. The panel links to the corresponding interactive Legacy Survey viewer and provides an image retry state.
+The sky-context panel uses cutouts generated from the **returned** coordinates and field of view. It starts with the all-sky unWISE NEO6 infrared layer and offers Legacy Survey DR11 and DR9 optical alternatives; failed cutout requests automatically advance through the alternatives. It is a reference image, not SPHEREx, and links to the interactive Legacy Survey viewer.
 
 ### Scientific limits
 

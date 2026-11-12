@@ -1,62 +1,62 @@
-'use client'
-import Link from 'next/link'
-import dynamic from 'next/dynamic'
+"use client";
+import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   useEffect,
   useRef,
   useState,
   type MouseEvent,
   type ReactNode,
-} from 'react'
+} from "react";
 import {
   Magnetic,
   PageEntrance,
   ScrollProgress,
   Reveal,
-} from './motion-effects'
-import { usePathname, useRouter } from 'next/navigation'
-import { MotionConfig, motion } from 'framer-motion'
-import { ArrowUpRight } from 'lucide-react'
-import { StarMark } from './cosmos'
-import GooeyNav, { type GooeyNavItem } from './react-bits/gooey-nav'
+} from "./motion-effects";
+import { usePathname, useRouter } from "next/navigation";
+import { MotionConfig, motion } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
+import { StarMark } from "./cosmos";
+import GooeyNav, { type GooeyNavItem } from "./react-bits/gooey-nav";
 
 // WebGL is client-only and loaded after first paint so it never blocks load.
-const Strands = dynamic(() => import('./react-bits/strands'), { ssr: false })
-const SplashCursor = dynamic(() => import('./react-bits/splash-cursor'), {
+const Strands = dynamic(() => import("./react-bits/strands"), { ssr: false });
+const SplashCursor = dynamic(() => import("./react-bits/splash-cursor"), {
   ssr: false,
-})
+});
 
 // Role order: red, orange, amber, warm white, cyan, blue, deep (see shader).
 const STRAND_COLORS = [
-  '#8a4fb2',
-  '#b97ad8',
-  '#e2b5f2',
-  '#f6ebfb',
-  '#93b5ff',
-  '#5a5fd8',
-  '#2a2b86',
-]
+  "#8a4fb2",
+  "#b97ad8",
+  "#e2b5f2",
+  "#f6ebfb",
+  "#93b5ff",
+  "#5a5fd8",
+  "#2a2b86",
+];
 
 const NAV_ITEMS: GooeyNavItem[] = [
-  { label: 'Home', href: '/' },
-  { label: 'Targets', href: '/targets' },
-  { label: 'About', href: '/about' },
-]
+  { label: "Home", href: "/" },
+  { label: "Targets", href: "/targets" },
+  { label: "About", href: "/about" },
+];
 
 function SkyBackdrop() {
-  const [dpr, setDpr] = useState<number | null>(null)
+  const [dpr, setDpr] = useState<number | null>(null);
   useEffect(() => {
     // Phones render at full CSS resolution (small canvas); larger screens at
     // 0.6x, which keeps the soft ribbons cheap on the GPU.
     const start = () =>
-      setDpr(window.matchMedia('(max-width: 767px)').matches ? 1 : 0.6)
-    if (typeof window.requestIdleCallback === 'function') {
-      const id = window.requestIdleCallback(start, { timeout: 1500 })
-      return () => window.cancelIdleCallback(id)
+      setDpr(window.matchMedia("(max-width: 767px)").matches ? 1 : 0.6);
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(start, { timeout: 1500 });
+      return () => window.cancelIdleCallback(id);
     }
-    const id = window.setTimeout(start, 250)
-    return () => window.clearTimeout(id)
-  }, [])
+    const id = window.setTimeout(start, 250);
+    return () => window.clearTimeout(id);
+  }, []);
   return (
     <div
       aria-hidden="true"
@@ -67,7 +67,7 @@ function SkyBackdrop() {
           className="absolute inset-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.6, ease: 'easeOut' }}
+          transition={{ duration: 1.6, ease: "easeOut" }}
         >
           <Strands
             glass={false}
@@ -88,31 +88,31 @@ function SkyBackdrop() {
       {/* Readability scrim: keeps text and controls legible over the strands. */}
       <div className="absolute inset-0 bg-void/30 lg:bg-linear-to-r lg:from-void/85 lg:via-void/40 lg:to-void/10" />
     </div>
-  )
+  );
 }
 
 // Mounted once in the root shell, so it persists across route changes.
 // Skipped entirely when the user prefers reduced motion.
 function SplashLayer() {
-  const [enabled, setEnabled] = useState(false)
-  const [lite, setLite] = useState(false)
+  const [enabled, setEnabled] = useState(false);
+  const [lite, setLite] = useState(false);
   useEffect(() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     // Phones and touch devices run the fluid sim at its lightest preset.
-    const touch = window.matchMedia('(max-width: 767px), (pointer: coarse)')
+    const touch = window.matchMedia("(max-width: 767px), (pointer: coarse)");
     const update = () => {
-      setEnabled(!reduce.matches)
-      setLite(touch.matches)
-    }
-    update()
-    reduce.addEventListener('change', update)
-    touch.addEventListener('change', update)
+      setEnabled(!reduce.matches);
+      setLite(touch.matches);
+    };
+    update();
+    reduce.addEventListener("change", update);
+    touch.addEventListener("change", update);
     return () => {
-      reduce.removeEventListener('change', update)
-      touch.removeEventListener('change', update)
-    }
-  }, [])
-  if (!enabled) return null
+      reduce.removeEventListener("change", update);
+      touch.removeEventListener("change", update);
+    };
+  }, []);
+  if (!enabled) return null;
   return (
     <SplashCursor
       rainbow={false}
@@ -126,48 +126,48 @@ function SplashLayer() {
       momentum={1}
       shading={1}
       glow={0}
-      quality={lite ? 'low' : 'high'}
+      quality={lite ? "low" : "high"}
       intro
       contained={false}
       zIndex={5}
     />
-  )
+  );
 }
 
 // GooeyNav renders plain <a href> links, so this wrapper turns their clicks
 // into client-side router pushes (same behaviour as <Link>), and drives the
 // active pill from the current route.
 function HeaderNav() {
-  const pathname = usePathname()
-  const router = useRouter()
-  const wrapperRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname();
+  const router = useRouter();
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const matched = NAV_ITEMS.findIndex(({ href }) =>
-    href === '/'
-      ? pathname === '/'
+    href === "/"
+      ? pathname === "/"
       : pathname === href || pathname?.startsWith(`${href}/`),
-  )
-  const routeIndex = Math.max(0, matched)
+  );
+  const routeIndex = Math.max(0, matched);
 
   // Optimistic index so the gooey animation starts on click instead of
   // waiting for the route to commit. Cleared whenever the pathname changes.
-  const [seenPath, setSeenPath] = useState(pathname)
-  const [pending, setPending] = useState<number | null>(null)
+  const [seenPath, setSeenPath] = useState(pathname);
+  const [pending, setPending] = useState<number | null>(null);
   if (seenPath !== pathname) {
-    setSeenPath(pathname)
-    setPending(null)
+    setSeenPath(pathname);
+    setPending(null);
   }
-  const activeIndex = pending ?? routeIndex
+  const activeIndex = pending ?? routeIndex;
 
   // GooeyNav renders its own <nav>; keep the landmark label the old nav had.
   useEffect(() => {
     wrapperRef.current
-      ?.querySelector('nav')
-      ?.setAttribute('aria-label', 'Main navigation')
-  }, [])
+      ?.querySelector("nav")
+      ?.setAttribute("aria-label", "Main navigation");
+  }, []);
 
   const handleClick = (event: MouseEvent<HTMLDivElement>) => {
-    const anchor = (event.target as Element).closest('a')
+    const anchor = (event.target as Element).closest("a");
     if (
       !anchor ||
       event.button !== 0 ||
@@ -176,31 +176,59 @@ function HeaderNav() {
       event.shiftKey ||
       event.altKey
     )
-      return
-    event.preventDefault()
-    router.push(anchor.getAttribute('href') ?? '/')
-  }
+      return;
+    event.preventDefault();
+    router.push(anchor.getAttribute("href") ?? "/");
+  };
 
   return (
     <div
       ref={wrapperRef}
       onClick={handleClick}
-      className="order-last flex w-full justify-center sm:order-none sm:w-auto"
+      className="order-last flex w-full justify-center md:order-none md:w-auto"
     >
-      <GooeyNav
-        items={NAV_ITEMS}
-        activeIndex={activeIndex}
-        onChange={(index) => setPending(index)}
-        theme="dark"
-        color="#cfb0e0"
-        size="md"
-      />
+      <nav
+        aria-label="Main navigation"
+        className="relative flex w-fit max-w-full rounded-full border border-white/10 bg-panel/80 p-0.5 md:hidden"
+      >
+        {NAV_ITEMS.map((item, index) => {
+          const active = activeIndex === index;
+          return (
+            <Link
+              key={item.href ?? item.label}
+              href={item.href ?? "/"}
+              onClick={() => setPending(index)}
+              aria-current={active ? "page" : undefined}
+              className={`relative z-10 flex min-h-8 flex-none items-center justify-center rounded-full px-3 text-[12px] font-medium transition-colors ${active ? "text-void" : "text-ink-dim"}`}
+            >
+              {active && (
+                <motion.span
+                  layoutId="mobile-navigation-active-pill"
+                  className="absolute inset-0 -z-10 rounded-full bg-lilac shadow-[0_3px_16px_rgba(207,176,224,.28)]"
+                  transition={{ type: "spring", stiffness: 430, damping: 32 }}
+                />
+              )}
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="hidden md:block">
+        <GooeyNav
+          items={NAV_ITEMS}
+          activeIndex={activeIndex}
+          onChange={(index) => setPending(index)}
+          theme="dark"
+          color="#cfb0e0"
+          size="md"
+        />
+      </div>
     </div>
-  )
+  );
 }
 
 export function SiteShell({ children }: { children: ReactNode }) {
-  const pathname = usePathname()
+  const pathname = usePathname();
   return (
     <MotionConfig reducedMotion="user">
       <SkyBackdrop />
@@ -310,5 +338,5 @@ export function SiteShell({ children }: { children: ReactNode }) {
         </Reveal>
       </footer>
     </MotionConfig>
-  )
+  );
 }
