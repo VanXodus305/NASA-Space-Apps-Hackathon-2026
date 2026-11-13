@@ -62,6 +62,8 @@ export function TargetAutocomplete({
 }) {
   const { contains } = useFilter({ sensitivity: "base" });
   const selectedTarget = options.find((option) => option.name === value);
+  const challengeOptions = options.filter((option) => Number(option.id) <= 5);
+  const moreOptions = options.filter((option) => Number(option.id) > 5);
   const selectTarget = (key: string | number | null) => {
     const target = options.find((option) => option.id === String(key));
     onSelect(target ?? null);
@@ -98,22 +100,54 @@ export function TargetAutocomplete({
             </SearchField.Group>
           </SearchField>
           <ListBox className="max-h-60 overflow-y-auto outline-none">
-            {options.map((option) => (
-              <ListBox.Item
-                key={option.id}
-                id={option.id}
-                textValue={option.name}
-                className="flex cursor-default items-center gap-3 rounded-md px-3 py-2 text-ink-dim outline-none transition-colors data-focused:bg-white/8 data-focused:text-ink"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm text-ink">{option.name}</span>
-                  <span className="mt-0.5 block font-mono text-[10px] tracking-[.06em] text-ink-faint">
-                    {option.tag} · {option.ra}°, {option.dec}°
+            <ListBox.Section
+              aria-label="Space Apps challenge examples"
+              className="before:block before:px-3 before:pb-1 before:pt-2 before:font-mono before:text-[10px] before:tracking-[.13em] before:text-lilac before:content-['SPACE_APPS_CHALLENGE_EXAMPLES']"
+            >
+              {challengeOptions.map((option) => (
+                <ListBox.Item
+                  key={option.id}
+                  id={option.id}
+                  textValue={option.name}
+                  className="flex cursor-default items-center gap-3 rounded-md px-3 py-2 text-ink-dim outline-none transition-colors data-focused:bg-white/8 data-focused:text-ink"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm text-ink">
+                      {option.name}
+                    </span>
+                    <span className="mt-0.5 block font-mono text-[10px] tracking-[.06em] text-ink-faint">
+                      {option.tag} · {option.ra}°, {option.dec}°
+                    </span>
                   </span>
-                </span>
-                <ListBox.ItemIndicator className="shrink-0 text-lilac" />
-              </ListBox.Item>
-            ))}
+                  <ListBox.ItemIndicator className="shrink-0 text-lilac" />
+                </ListBox.Item>
+              ))}
+            </ListBox.Section>
+            {moreOptions.length > 0 && (
+              <ListBox.Section
+                aria-label="More targets"
+                className="mt-1 border-t border-white/10 before:block before:px-3 before:pb-1 before:pt-3 before:font-mono before:text-[10px] before:tracking-[.13em] before:text-ink-dim before:content-['MORE_TARGETS']"
+              >
+                {moreOptions.map((option) => (
+                  <ListBox.Item
+                    key={option.id}
+                    id={option.id}
+                    textValue={option.name}
+                    className="flex cursor-default items-center gap-3 rounded-md px-3 py-2 text-ink-dim outline-none transition-colors data-focused:bg-white/8 data-focused:text-ink"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm text-ink">
+                        {option.name}
+                      </span>
+                      <span className="mt-0.5 block font-mono text-[10px] tracking-[.06em] text-ink-faint">
+                        {option.tag} · {option.ra}°, {option.dec}°
+                      </span>
+                    </span>
+                    <ListBox.ItemIndicator className="shrink-0 text-lilac" />
+                  </ListBox.Item>
+                ))}
+              </ListBox.Section>
+            )}
           </ListBox>
         </Autocomplete.Filter>
       </Autocomplete.Popover>

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Button } from "@heroui/react";
 import { ArrowUpRight, MoveUpRight, Sparkles, Telescope } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
@@ -104,6 +104,13 @@ export function TargetGallery() {
   const visibleTargets = targets.filter(
     (target) => filter === "All targets" || target.type === filter,
   );
+  const challengeTargets = visibleTargets.filter(
+    (target) => Number(target.number) <= 5,
+  );
+  const moreTargets = visibleTargets.filter(
+    (target) => Number(target.number) > 5,
+  );
+  const groupedTargets = [...challengeTargets, ...moreTargets];
   return (
     <>
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
@@ -125,79 +132,114 @@ export function TargetGallery() {
         </span>
       </div>
       <motion.div layout className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {visibleTargets.map((t) => (
-          <motion.div
-            layout
-            key={t.name}
-            initial={reduced ? false : { opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="flex justify-center"
-          >
-            <Link
-              href={targetHref(t)}
-              aria-label={`Open ${t.name} in viewer`}
-              className="block w-fit max-w-full rounded-3xl"
-            >
-              <ReflectiveCard
-                name={t.name}
-                role={t.tag}
-                videoSrc="/videos/reflection.mp4"
-                webcam={false}
-                tint="#cfb0e0"
-                metalness={1}
-                roughness={0.3}
-                blurStrength={6}
-                shine={1}
-                glare={0.5}
-                grayscale={1}
-                warp={0.6}
-                warpScale={1}
-                bevel={3}
-                tiltStrength={12}
-                radius={24}
-                enableTilt
-                intro
-              >
-                {/* Solid card face, inset 4px so the metal shows as a frame. */}
-                <div className="relative m-[calc(4px-var(--rc-pad))] flex flex-1 flex-col overflow-hidden rounded-[20px] bg-panel">
-                  <div className="relative aspect-[500/240] shrink-0 overflow-hidden border-b border-white/8 bg-void">
-                    <TargetArt index={Number(t.number) - 1} color={t.color} />
-                    <span className="absolute left-4 top-3 font-mono text-[11px] text-ink-dim">
-                      FIELD / {t.number}
-                    </span>
-                    <span className="absolute right-4 top-3 flex items-center gap-1.5 rounded-full border border-white/10 bg-panel-2 px-2 py-1 text-[11px] text-ink-dim">
-                      {t.type === "Motion" ? (
-                        <MoveUpRight size={10} />
-                      ) : (
-                        <Sparkles size={10} />
-                      )}{" "}
-                      {t.type}
-                    </span>
+        {groupedTargets.map((t, index) => (
+          <Fragment key={t.name}>
+            {index === 0 && challengeTargets.length > 0 && (
+              <div className="md:col-span-2 xl:col-span-3">
+                <div className="flex flex-wrap items-end justify-between gap-2 border-b border-lilac/20 pb-3">
+                  <div>
+                    <p className="font-mono text-[10px] tracking-[.16em] text-lilac">
+                      SPACE APPS CHALLENGE EXAMPLES
+                    </p>
+                    <p className="mt-1 text-sm text-ink-dim">
+                      Five featured fields designed for first discoveries.
+                    </p>
                   </div>
-                  <div className="flex min-h-0 flex-1 flex-col px-5 pb-5 pt-5">
-                    <p className="font-mono text-[11px] tracking-[.1em] text-ink-dim">
-                      {t.tag}
+                  <span className="font-mono text-[10px] tracking-[.12em] text-ink-faint">
+                    {String(challengeTargets.length).padStart(2, "0")} FEATURED
+                  </span>
+                </div>
+              </div>
+            )}
+            {index === challengeTargets.length && moreTargets.length > 0 && (
+              <div className="mt-4 md:col-span-2 xl:col-span-3">
+                <div className="flex flex-wrap items-end justify-between gap-2 border-b border-white/10 pb-3">
+                  <div>
+                    <p className="font-mono text-[10px] tracking-[.16em] text-ink-dim">
+                      MORE SKY TO EXPLORE
                     </p>
-                    <h2 className="mt-2 font-display text-2xl tracking-tight text-ink">
-                      {t.name}
-                    </h2>
-                    <p className="mt-3 text-[13px] leading-6 text-ink-faint">
-                      {t.description}
+                    <p className="mt-1 text-sm text-ink-faint">
+                      Additional coordinate-backed targets for your next blink.
                     </p>
-                    {t.name === "WISE 0855" && (
-                      <p className="mt-2 text-[11px] text-lilac">
-                        Auto release enabled · falls back to QR2
+                  </div>
+                  <span className="font-mono text-[10px] tracking-[.12em] text-ink-faint">
+                    {String(moreTargets.length).padStart(2, "0")} MORE TARGETS
+                  </span>
+                </div>
+              </div>
+            )}
+            <motion.div
+              layout
+              initial={reduced ? false : { opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex justify-center"
+            >
+              <Link
+                href={targetHref(t)}
+                aria-label={`Open ${t.name} in viewer`}
+                className="block w-fit max-w-full rounded-3xl"
+              >
+                <ReflectiveCard
+                  name={t.name}
+                  role={t.tag}
+                  videoSrc="/videos/reflection.mp4"
+                  webcam={false}
+                  tint="#cfb0e0"
+                  metalness={1}
+                  roughness={0.3}
+                  blurStrength={6}
+                  shine={1}
+                  glare={0.5}
+                  grayscale={1}
+                  warp={0.6}
+                  warpScale={1}
+                  bevel={3}
+                  tiltStrength={12}
+                  radius={24}
+                  enableTilt
+                  intro
+                >
+                  {/* Solid card face, inset 4px so the metal shows as a frame. */}
+                  <div className="relative m-[calc(4px-var(--rc-pad))] flex flex-1 flex-col overflow-hidden rounded-[20px] bg-panel">
+                    <div className="relative aspect-[500/240] shrink-0 overflow-hidden border-b border-white/8 bg-void">
+                      <TargetArt index={Number(t.number) - 1} color={t.color} />
+                      <span className="absolute left-4 top-3 font-mono text-[11px] text-ink-dim">
+                        FIELD / {t.number}
+                      </span>
+                      <span className="absolute right-4 top-3 flex items-center gap-1.5 rounded-full border border-white/10 bg-panel-2 px-2 py-1 text-[11px] text-ink-dim">
+                        {t.type === "Motion" ? (
+                          <MoveUpRight size={10} />
+                        ) : (
+                          <Sparkles size={10} />
+                        )}{" "}
+                        {t.type}
+                      </span>
+                    </div>
+                    <div className="flex min-h-0 flex-1 flex-col px-5 pb-5 pt-5">
+                      <p className="font-mono text-[11px] tracking-[.1em] text-ink-dim">
+                        {t.tag}
                       </p>
-                    )}
-                    <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-4 text-xs text-ink">
-                      Open in viewer <ArrowUpRight size={17} />
+                      <h2 className="mt-2 font-display text-2xl tracking-tight text-ink">
+                        {t.name}
+                      </h2>
+                      <p className="mt-3 text-[13px] leading-6 text-ink-faint">
+                        {t.description}
+                      </p>
+                      {t.name === "WISE 0855" && (
+                        <p className="mt-2 text-[11px] text-lilac">
+                          Auto release enabled · falls back to QR2
+                        </p>
+                      )}
+                      <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-4 text-xs text-ink">
+                        Open in viewer <ArrowUpRight size={17} />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </ReflectiveCard>
-            </Link>
-          </motion.div>
+                </ReflectiveCard>
+              </Link>
+            </motion.div>
+          </Fragment>
         ))}
         {filter === "All targets" && (
           <motion.div
